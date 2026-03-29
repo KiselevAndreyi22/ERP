@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<body>
+<div class="sidebar" id="sidebar" th:fragment="sidebar">
+    <div class="sidebar-header">
+        <h2>Информационная система</h2>
+        <p>Управление предприятием</p>
+    </div>
+
+    <div class="user-info">
+        <span class="user-name" sec:authentication="name">Пользователь</span>
+        <span class="user-role" sec:authorize="hasRole('ADMIN')">Администратор</span>
+        <span class="user-role" sec:authorize="hasRole('USER')">Пользователь</span>
+    </div>
+
+    <ul class="nav-menu">
+        <li class="nav-item">
+            <a href="/home" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Главная</span>
+            </a>
+        </li>
+
+        <li class="nav-item has-submenu">
+            <a href="#" class="nav-link" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">📦</span>
+                <span class="nav-text">Справочники</span>
+                <span class="nav-badge">▼</span>
+            </a>
+            <ul class="submenu">
+                <li class="submenu-item">
+                    <a th:href="@{/admin/users}" class="submenu-link">➤ Товары</a>
+                </li>
+                <li class="submenu-item">
+                    <a th:href="@{/admin/manufacturers}" class="submenu-link">➤ Производители</a>
+                </li>
+                <li class="submenu-item">
+                    <a th:href="@{/admin/users}" class="submenu-link">➤ Пользователи</a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+            <a href="#" class="nav-link" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">Администрирование</span>
+                <span class="nav-badge">▼</span>
+            </a>
+            <ul class="submenu">
+                <li class="submenu-item">
+                    <a th:href="@{/admin/users}" class="submenu-link">➤ Управление пользователями</a>
+                </li>
+                <li class="submenu-item">
+                    <a th:href="@{/admin/register}" class="submenu-link">➤ Регистрация пользователя</a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Отчеты</span>
+            </a>
+        </li>
+    </ul>
+
+    <form th:action="@{/logout}" method="post" style="position: absolute; bottom: 20px; left: 15px; right: 15px;">
+        <button type="submit" class="logout-btn">
+            <span>🚪</span>
+            <span>Выйти из системы</span>
+        </button>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ERP Система — Главная</title>
+
+    <!-- Общие стили макета, если используешь -->
+    <link rel="stylesheet" th:href="@{/css/menu/layout.css}" />
+
+    <!-- Стили бокового меню и базовой верстки для этой страницы -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            overflow-x: hidden;
+        }
+
+        /* Боковое меню */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-header h2 { font-size: 20px; font-weight: 600; margin: 0; color: white; }
+        .sidebar-header p { font-size: 12px; opacity: 0.8; margin-top: 5px; }
+
+        .user-info { padding: 15px 20px; background: rgba(0,0,0,0.2); margin: 0 15px 20px 15px; border-radius: 10px; }
+        .user-name { font-size: 14px; font-weight: 600; display: block; margin-bottom: 5px; }
+        .user-role { font-size: 11px; opacity: 0.7; }
+
+        .nav-menu { list-style: none; padding: 0; margin: 0; }
+        .nav-item { margin: 5px 15px; border-radius: 10px; transition: all 0.3s ease; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); }
+        .nav-item.active { background: rgba(255,255,255,0.2); }
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: white; text-decoration: none; font-size: 14px; transition: all 0.3s ease; }
+        .nav-icon { width: 24px; margin-right: 12px; font-size: 18px; }
+        .nav-text { flex: 1; }
+        .nav-badge { background: #ff4444; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+
+        .submenu { list-style: none; padding-left: 51px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .nav-item.has-submenu.active .submenu { max-height: 300px; }
+
+        .submenu-item { margin: 5px 0; }
+        .submenu-link { display: block; padding: 8px 15px; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; transition: all 0.3s ease; }
+        .submenu-link:hover { color: white; padding-left: 20px; }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 20px; left: 15px; right: 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white; padding: 12px; border-radius: 10px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); }
+
+        /* Основной контент */
+        .main-content { margin-left: 280px; padding: 20px; min-height: 100vh; transition: all 0.3s ease; }
+        .top-bar { background: white; border-radius: 12px; padding: 15px 25px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 24px; font-weight: 600; color: #333; }
+        .menu-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: #666; }
+        .content-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Боковое меню -->
+<div th:replace="~{menu/sidebar.html :: sidebar}"></div>
+
+<!-- Основной контент -->
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <h1 class="page-title">Панель управления</h1>
+        <div></div>
+    </div>
+
+    <div class="content-container">
+        <p>Добро пожаловать в ERP систему! Выберите раздел в меню слева, чтобы начать работу.</p>
+    </div>
+</div>
+
+<!-- Скрипты для работы меню -->
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('open');
+        }
+    }
+
+    function toggleSubmenu(element) {
+        const parent = element.closest('.nav-item');
+        if (parent) {
+            parent.classList.toggle('active');
+        }
+    }
+</script>
+
+</body>
+</html>

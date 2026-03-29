@@ -1,0 +1,230 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: developer
+      comment: "Create manufacturer table"
+      changes:
+        - createTable:
+            tableName: manufacturer
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: code
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 2
+      author: developer
+      comment: "Add unique constraint on manufacturer (name, code)"
+      changes:
+        - addUniqueConstraint:
+            tableName: manufacturer
+            columnNames: name, code
+            constraintName: uk_manufacturer_name_code
+
+  - changeSet:
+      id: 3
+      author: developer
+      comment: "Create product table"
+      changes:
+        - createTable:
+            tableName: product
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: manufacturer_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 4
+      author: developer
+      comment: "Add unique constraint on product (name, manufacturer_id)"
+      changes:
+        - addUniqueConstraint:
+            tableName: product
+            columnNames: name, manufacturer_id
+            constraintName: uk_product_name_manufacturer
+
+  - changeSet:
+      id: 5
+      author: developer
+      comment: "Add foreign key constraint on product.manufacturer_id"
+      changes:
+        - addForeignKeyConstraint:
+            constraintName: fk_product_manufacturer
+            baseTableName: product
+            baseColumnNames: manufacturer_id
+            referencedTableName: manufacturer
+            referencedColumnNames: id
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+
+  - changeSet:
+      id: 6
+      author: developer
+      comment: "Create product_variant table"
+      changes:
+        - createTable:
+            tableName: product_variant
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: sku
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: product_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 7
+      author: developer
+      comment: "Add foreign key constraint on product_variant.product_id"
+      changes:
+        - addForeignKeyConstraint:
+            constraintName: fk_productvariant_product
+            baseTableName: product_variant
+            baseColumnNames: product_id
+            referencedTableName: product
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+  - changeSet:
+      id: 8
+      author: developer
+      comment: "Create variant_attributes table"
+      changes:
+        - createTable:
+            tableName: variant_attributes
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: variant_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: value
+                  type: VARCHAR(255)
+
+  - changeSet:
+      id: 9
+      author: developer
+      comment: "Add unique constraint on variant_attributes (variant_id, name)"
+      changes:
+        - addUniqueConstraint:
+            tableName: variant_attributes
+            columnNames: variant_id, name
+            constraintName: uk_variantattr_variant_name
+
+  - changeSet:
+      id: 10
+      author: developer
+      comment: "Add foreign key constraint on variant_attributes.variant_id"
+      changes:
+        - addForeignKeyConstraint:
+            constraintName: fk_variantattr_variant
+            baseTableName: variant_attributes
+            baseColumnNames: variant_id
+            referencedTableName: product_variant
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+
+  - changeSet:
+      id: 11
+      author: developer
+      comment: "Create variant_cost table"
+      changes:
+        - createTable:
+            tableName: variant_cost
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: variant_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: base_price
+                  type: DOUBLE
+              - column:
+                  name: valid_from
+                  type: DATE
+              - column:
+                  name: valid_to
+                  type: DATE
+
+  - changeSet:
+      id: 12
+      author: developer
+      comment: "Add foreign key constraint on variant_cost.variant_id"
+      changes:
+        - addForeignKeyConstraint:
+            constraintName: fk_variantcost_variant
+            baseTableName: variant_cost
+            baseColumnNames: variant_id
+            referencedTableName: product_variant
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: RESTRICT

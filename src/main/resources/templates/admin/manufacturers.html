@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Users</title>
+</head>
+<body>
+
+<h2>All Manufacturers</h2>
+
+<table border="1">
+    <tr>
+        <th>Name</th>
+        <th>Code</th>
+    </tr>
+
+    <tr th:each="manufacturer : ${manufacturers}">
+        <td th:text="${manufacturer.name}"></td>
+        <td th:text="${manufacturer.code}"></td>
+        <td>
+            <form th:action="@{/admin/delete-manufacturer}" method="post">
+                <input type="hidden" name="id" th:value="${manufacturer.id}" />
+
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}" />
+
+                <button type="submit"
+                        onclick="return confirm('Delete this manufacturer?')">
+                    Delete
+                </button>
+            </form>
+        </td>
+    </tr>
+
+</table>
+
+</body>
+</html>

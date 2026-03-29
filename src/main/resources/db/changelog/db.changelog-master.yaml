@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/001-create-user-table.yaml
+      file: db/changelog/002-create-admin-tables.yaml

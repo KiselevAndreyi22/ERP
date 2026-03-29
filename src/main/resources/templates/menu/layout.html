@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'ERP Система'">ERP Система</title>
+
+    <!-- Общие стили -->
+    <link rel="stylesheet" th:href="@{/css/menu/layout.css}">
+
+    <!-- Дополнительные стили страницы -->
+    <th:block th:replace="${pageStyles} ?: _"></th:block>
+</head>
+<body>
+<!-- Подключаем боковое меню -->
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<!-- Основной контент -->
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <h1 class="page-title" th:text="${pageTitle} ?: 'Панель управления'">Панель управления</h1>
+        <div></div>
+    </div>
+
+    <div class="content-container">
+        <!-- Содержимое страницы -->
+        <div th:replace="${pageContent}">
+            <p>Загрузка...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('open');
+        }
+    }
+</script>
+
+<!-- Дополнительные скрипты страницы -->
+<th:block th:replace="${pageScripts} ?: _"></th:block>
+</body>
+</html>
