@@ -1,12 +1,13 @@
 package ru.kiselev.erp.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.kiselev.erp.dto.request.ManufacturerDto;
-import ru.kiselev.erp.model.admin.Manufacturer;
 import ru.kiselev.erp.repository.admin.ManufacturerRepository;
 import ru.kiselev.erp.service.impl.AdminService;
 
@@ -43,34 +44,56 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
-    /*@GetMapping("/manufacturers")
-    public String getAllManufacturers(Model model){
+    //
+    @GetMapping("/manufacturers")
+    public String listManufacturers(Model model) {
         model.addAttribute("manufacturers", adminService.getAllManufacturers());
-        return "manufacturers";
+        model.addAttribute("manufacturerDto", new ManufacturerDto());
+        model.addAttribute("showForm", false);
+        return "admin/list";
     }
 
-    @PostMapping("/delete-manufacturer")
-    public String deleteManufacturer(@RequestParam Long id) {
-        adminService.deleteManufacturerById(id);
-        return "redirect:/admin/manufacturers";
-    }*/
-
-    @PostMapping("/save")
-    public String addManufacturer(@ModelAttribute("manufacturerDto") ManufacturerDto manufacturerDto,
+    @PostMapping("/manufacturers/save")
+    public String addManufacturer(@Valid @ModelAttribute("manufacturerDto") ManufacturerDto manufacturerDto,
+                                  BindingResult bindingResult,
+                                  Model model,
                                   RedirectAttributes redirectAttributes) {
-        try {
-            Manufacturer manufacturer = new Manufacturer();
-            manufacturer.setName(manufacturerDto.getName());
-            manufacturer.setCode(manufacturerDto.getCode());
 
-            manufacturerRepository.save(manufacturer);
-
-            redirectAttributes.addFlashAttribute("successMessage", "Производитель успешно создан");
-            return "redirect:/manufacturers";
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при создании производителя");
-            return "redirect:/manufacturers/new";
+        if (manufacturerRepository.existsByCode(manufacturerDto.getCode())) {
+            bindingResult.rejectValue("code", "error.code", "Производитель с таким кодом уже существует");
         }
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("manufacturers", adminService.getAllManufacturers());
+            model.addAttribute("showForm", true);
+            return "admin/list";
+        }
+
+        try {
+            adminService.addManufacturer(manufacturerDto);
+            redirectAttributes.addFlashAttribute("successMessage", "Производитель успешно создан");
+            return "redirect:/admin/manufacturers";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при создании производителя");
+            return "redirect:/admin/manufacturers";
+        }
+    }
+
+    @PostMapping("/manufacturers/delete/{id}")
+    public String deleteManufacturer(@PathVariable Long id,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            if (manufacturerRepository.existsById(id)) {
+                adminService.deleteManufacturerById(id);
+                redirectAttributes.addFlashAttribute("successMessage", "Производитель успешно удален");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Производитель не найден");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении производителя");
+        }
+
+        return "redirect:/admin/manufacturers";
     }
 }

@@ -25,6 +25,7 @@ public class ManufacturerDto {
     private String code;
 
     public ManufacturerDto(Manufacturer manufacturer) {
+        this.id = manufacturer.getId();
         this.name = manufacturer.getName();
         this.code = manufacturer.getCode();
     }
