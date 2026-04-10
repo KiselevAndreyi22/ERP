@@ -3,9 +3,11 @@ package ru.kiselev.erp.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.kiselev.erp.dto.request.*;
+import ru.kiselev.erp.dto.response.ProductResponse;
 import ru.kiselev.erp.dto.response.UserDto;
 import ru.kiselev.erp.model.Role;
 import ru.kiselev.erp.model.User;
@@ -13,6 +15,8 @@ import ru.kiselev.erp.model.admin.*;
 import ru.kiselev.erp.repository.UserRepository;
 import ru.kiselev.erp.repository.admin.ManufacturerRepository;
 import ru.kiselev.erp.repository.admin.ProductRepository;
+import ru.kiselev.erp.repository.admin.ProductVariantRepository;
+import ru.kiselev.erp.repository.admin.VariantAttributeRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,10 +31,12 @@ public class AdminService {
     UserRepository userRepository;
     ManufacturerRepository manufacturerRepository;
     ProductRepository productRepository;
+    ProductVariantRepository productVariantRepository;
+    VariantAttributeRepository variantAttributeRepository;
     PasswordEncoder passwordEncoder;
 
     public List<UserDto> getAllUsers(){
-        return userRepository.findAll()
+        return userRepository.findAllWithoutAdmin()
                 .stream().map(UserDto::new)
                 .collect(Collectors.toList());
     }
@@ -69,18 +75,8 @@ public class AdminService {
         manufacturerRepository.deleteById(id);
     }
 
-    public ProductDto addProduct(ProductDto productDto){
-
-        Product product = new Product();
-        product.setName(productDto.getName());
-        product.setManufacturer(productDto.getManufacturer());
-
-        productRepository.save(product);
-        return productDto;
-    }
-
     @Transactional
-    public Product createProduct(CreateProductRequest request){
+    public void createProduct(CreateProductRequest request){
 
         Product product = new Product();
         product.setName(request.getName());
@@ -90,32 +86,102 @@ public class AdminService {
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found"));
         product.setManufacturer(manufacturer);
 
-        for (ProductVariantDto productVariantDto : request.getVariants()){
+        if(request.getVariants() != null && !request.getVariants().isEmpty()) {
+            for (ProductVariantDto productVariantDto : request.getVariants()) {
 
-            ProductVariant productVariant = new ProductVariant();
-            productVariant.setSku(productVariantDto.getSku());
-            productVariant.setProduct(product);
+                ProductVariant productVariant = new ProductVariant();
+                productVariant.setSku(productVariantDto.getSku());
+                productVariant.setProduct(product);
 
-            for (VariantAttributeDto attributeDto : productVariantDto.getAttributes()){
+                product.getProductVariants().add(productVariant);
 
-                VariantAttribute variantAttribute = new VariantAttribute();
-                variantAttribute.setName(attributeDto.getName());
-                variantAttribute.setValue(attributeDto.getValue());
-                variantAttribute.setProductVariant(productVariant);
+                if (productVariantDto.getAttributes() != null) {
+                    for (VariantAttributeDto attributeDto : productVariantDto.getAttributes()) {
 
-                productVariant.getVariantAttributes().add(variantAttribute);
-            }
+                        VariantAttribute variantAttribute = new VariantAttribute();
+                        variantAttribute.setName(attributeDto.getName());
+                        variantAttribute.setValue(attributeDto.getValue());
+                        variantAttribute.setProductVariant(productVariant);
 
-            for (VariantCostDto variantCostDto : productVariantDto.getCosts()){
-                VariantCost variantCost = new VariantCost();
-                variantCost.setBasePrice(variantCostDto.getBasePrice());
-                variantCost.setValidFrom(variantCostDto.getValidFrom());
-                variantCost.setValidTo(variantCostDto.getValidTo());
+                        productVariant.getVariantAttributes().add(variantAttribute);
+                    }
+                }
 
-                productVariant.getVariantCosts().add(variantCost);
+                if (productVariantDto.getCosts() != null) {
+                    for (VariantCostDto dto : productVariantDto.getCosts()) {
+
+                        VariantCost variantCost = new VariantCost();
+                        variantCost.setProductVariant(productVariant);
+                        variantCost.setBasePrice(dto.getBasePrice());
+                        variantCost.setValidFrom(dto.getValidFrom());
+                        variantCost.setValidTo(dto.getValidTo());
+
+                        productVariant.getVariantCosts().add(variantCost);
+                    }
+                }
             }
         }
-        return productRepository.save(product);
+        try {
+            productRepository.saveAndFlush(product);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Продукт уже существует", e);
+        }
     }
+
+    public void deleteProductById(Long id){
+        productRepository.deleteById(id);
+    }
+
+    private ProductVariantDto mapToProductVariantDto(ProductVariant productVariant){
+        ProductVariantDto productVariantDto = new ProductVariantDto();
+
+        productVariantDto.setSku(productVariant.getSku());
+
+        productVariantDto.setAttributes(
+                productVariant.getVariantAttributes().stream()
+                        .map(attr->{
+                            VariantAttributeDto variantAttributeDto = new VariantAttributeDto();
+                            variantAttributeDto.setName(attr.getName());
+                            variantAttributeDto.setValue(attr.getValue());
+                            return variantAttributeDto;
+                        })
+                        .toList()
+        );
+
+        return productVariantDto;
+    }
+
+    private ProductResponse mapToProductResponse(Product product){
+        ProductResponse productResponse = new ProductResponse();
+
+        productResponse.setName(product.getName());
+        productResponse.setType(product.getType());
+        Manufacturer manufacturer = product.getManufacturer();
+
+        productResponse.setVariants(
+                product.getProductVariants().stream()
+                        .map(this::mapToProductVariantDto)
+                        .toList()
+        );
+
+        return productResponse;
+    }
+
+    public List<Product> getAllProducts(){
+        return productRepository.findAll();
+    }
+
+    public List<ProductVariant> getAllProductVariantsById(Long productId){
+        return productVariantRepository.findAllByProductId(productId);
+    }
+
+    public List<VariantAttribute> getAllVariantAttributesByVariantId(Long variantId){
+        return variantAttributeRepository.findAllById(variantId);
+    }
+
+    public ProductType[] getAllProductTypes(){
+        return ProductType.values();
+    }
+    //Цену надо искать только текущую, которая активна на данный момент
 
 }

@@ -21,9 +21,8 @@ public class VariantAttribute {
     @JoinColumn(name = "variant_id")
     private ProductVariant productVariant;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "name", nullable = false)
-    private Attribute name;
+    private String name;
 
     @Column(name = "value")
     private String value;

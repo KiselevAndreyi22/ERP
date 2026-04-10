@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>ERP Система - Продукты</title>
+    <style>
+        /* Базовые стили взяты из list.html - компактная версия */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; overflow-x: hidden; }
+        /* Боковое меню */
+        .sidebar { position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; transition: all 0.3s ease; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-header h2 { font-size: 20px; font-weight: 600; margin: 0; color: white; }
+        .sidebar-header p { font-size: 12px; opacity: 0.8; margin-top: 5px; }
+        .user-info { padding: 15px 20px; background: rgba(0,0,0,0.2); margin: 0 15px 20px 15px; border-radius: 10px; }
+        .user-name { font-size: 14px; font-weight: 600; display: block; margin-bottom: 5px; }
+        .user-role { font-size: 11px; opacity: 0.7; }
+        .nav-menu { list-style: none; padding: 0; margin: 0; }
+        .nav-item { margin: 5px 15px; border-radius: 10px; transition: all 0.3s ease; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); }
+        .nav-item.active { background: rgba(255,255,255,0.2); }
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: white; text-decoration: none; font-size: 14px; transition: all 0.3s ease; }
+        .nav-icon { width: 24px; margin-right: 12px; font-size: 18px; }
+        .nav-text { flex: 1; }
+        .nav-badge { background: #ff4444; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+
+        .submenu { list-style: none; padding-left: 51px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .nav-item.has-submenu.active .submenu { max-height: 300px; }
+        .submenu-item { margin: 5px 0; }
+        .submenu-link { display: block; padding: 8px 15px; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; transition: all 0.3s ease; }
+        .submenu-link:hover { color: white; padding-left: 20px; }
+
+        .logout-btn { position: absolute; bottom: 20px; left: 15px; right: 15px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; }
+        .logout-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); }
+
+        /* основной контент */
+        .main-content { margin-left: 280px; padding: 20px; min-height: 100vh; transition: all 0.3s ease; }
+        .top-bar { margin-left:60px; width:80%; background: white; border-radius: 12px; padding: 15px 25px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 24px; font-weight: 600; color: #333; }
+        .content-container { margin-left: 60px; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width:80%; }
+        .btn-1c { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #2a5298; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .form-container { display: none; background: #f8f9fa; padding: 20px; border-radius: 20px; margin-top: 16px; margin-bottom: 30px; border: 1px solid #e9ecef;}
+        .form-container.show { display: block; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display:block; margin-bottom:6px; font-weight:600; color:#495057; }
+        .form-control { width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; }
+        .small { font-size:13px; color:#6c757d; }
+        .table-container { overflow-x:auto; margin-top:10px; }
+        table { width:100%; border-collapse:collapse; }
+        th,td { padding:12px; text-align:left; border-bottom:1px solid #e9ecef; }
+
+        /*Отображение вариантов*/
+        .variants-row{display: flex}
+        .variant, .attribute, .cost { background:#fff; border-radius:6px; padding:10px; margin-bottom:10px; border:1px solid #e9ecef; display: block }
+        .variant-header {justify-content:space-between; align-items:center; gap:8px; display:flex }
+        .var-delete-btn { float: right; margin-top:5px;}
+        .muted { color:#6c757d; font-size:15px; margin-top: 5px;}
+        .attr-list { list-style: none; margin-top: 5px;}
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .section-title{margin-bottom:5px;}
+
+        /* Уведомления (правый нижний угол) */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            min-width: 280px;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toast-success {
+            border-left: 4px solid #28a745;
+        }
+
+        .toast-success .toast-header {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .toast-error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .toast-error .toast-header {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .toast-header {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .toast-body {
+            padding: 12px 15px;
+            color: #333;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Боковое меню -->
+<div th:replace="~{menu/sidebar.html :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <h1 class="page-title">Продукты</h1>
+        <div></div>
+    </div>
+
+    <div class="content-container">
+        <div id="successMessageData" th:text="${successMessage}" style="display:none;"></div>
+        <div id="errorMessageData" th:text="${errorMessage}" style="display:none;"></div>
+
+        <button class="btn-1c btn-primary" style="margin-bottom:15px;" onclick="openForm()">➕ Добавить продукт</button>
+
+        <!-- Форма добавления продукта -->
+        <div id="productForm"
+             class="form-container"
+             th:classappend="${showProductForm} ? ' show' : ''">
+            <h3 style="margin-bottom:12px;">Добавление продукта</h3>
+
+            <form th:action="@{/admin/products/save}" th:object="${productDto}" method="post" id="createProductForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <div class="form-group">
+                    <label for="name">Наименование:</label>
+                    <input id="name" name="name" type="text" class="form-control" placeholder="Введите название" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="type">Категория продукта:</label>
+                    <select id="type" name="type" class="form-control" required>
+                        <option value="">Выберите категорию продукта</option>
+                        <option th:each="type : ${productTypes}"
+                                th:value="${type.name()}"
+                                th:text="${type.rusName}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="manufacturer">Наименование производителя:</label>
+                    <select id="manufacturer" name="manufacturerId" class="form-control" required>
+                        <option th:each="m : ${manufacturers}" th:value="${m.id}" th:text="${m.name}">Производитель</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <button type="button" class="btn-1c btn-secondary" onclick="addVariant()">Добавить вариант</button>
+                    </div>
+                </div>
+
+                <div id="variantsContainer"></div>
+
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button type="submit" class="btn-1c btn-success">Сохранить</button>
+                    <button type="button" class="btn-1c btn-danger" onclick="closeForm()">Отменить</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Список продуктов -->
+        <h3 style="margin:10px 0 15px 0;">Список продуктов</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Номер</th>
+                    <th>Название</th>
+                    <th>Тип</th>
+                    <th>Производитель</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr th:if="${products.isEmpty()}">
+                    <td colspan="4" style="text-align: center;">Нет продуктов</td>
+                </tr>
+
+                <th:block th:each="product : ${products}">
+
+                    <!-- Основная строка -->
+                    <tr>
+                        <td th:text="${product.id}"></td>
+                        <td th:text="${product.name}"></td>
+                        <td th:text="${product.type}"></td>
+                        <td th:text="${product.manufacturer != null ? product.manufacturer.name : '-'}"></td>
+                        <td>
+                            <button class="btn-1c btn-secondary"
+                                    th:attr="onclick=|toggleVariants(${product.id})|">
+                                Посмотреть модели
+                            </button>
+                            <form th:action="@{/admin/products/delete/{id}(id=${product.id})}" method="post" style="display:inline-block;" onsubmit="return confirm('Удалить продукт?')">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <button type="submit" class="btn-1c btn-danger">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    <!-- Строка вариантов -->
+                    <tr class="variants-row"
+                        th:id="${'variants_row_' + product.id}"
+                        style="display: none;">
+                        <td colspan="6">
+                            <div id="var-wrap" class="variants-wrap">
+                                <div class="muted" th:if="${#lists.isEmpty(product.productVariants)}">У продукта нет вариантов</div>
+                                <div th:each="v, viStat : ${product.productVariants}" class="variant">
+                                    <div id="var-header" class="variant-header">
+                                        <strong th:text="${v.sku}">...</strong>
+                                    </div>
+                                    <div>
+                                        <div id="var-attr" class="muted">Описание:</div>
+                                        <ul class="attr-list" th:if="${!#lists.isEmpty(v.variantAttributes)}">
+                                            <li th:each="a : ${v.variantAttributes}" th:text="|${a.name}: ${a.value}|">Цвет: чёрный</li>
+                                        </ul>
+                                        <div class="muted" th:if="${#lists.isEmpty(v.variantAttributes)}">Нет атрибутов</div>
+                                    </div>
+                                    <!-- Если нужно, можно показать и цены -->
+                                    <!--
+                                    <div style="margin-top:8px;">
+                                        <div class="muted">Цены:</div>
+                                        <ul class="attr-list" th:if="${!#lists.isEmpty(v.variantCosts)}">
+                                            <li th:each="c : ${v.variantCosts}" th:text="|${c.basePrice} (с ${#temporals.format(c.validFrom, 'dd.MM.yyyy')} по ${#temporals.format(c.validTo, 'dd.MM.yyyy')})|">1000.00 (с 01.01.2025 по 31.12.2025)</li>
+                                        </ul>
+                                        <div class="muted" th:if="${#lists.isEmpty(v.variantCosts)}">Нет цен</div>
+                                    </div>
+                                    -->
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                </th:block>
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- Шаблоны для JS (клонируются) -->
+<div id="templates" style="display:none;">
+    <!-- Вариант -->
+    <div id="variantTemplate">
+        <div class="variant" data-index="__INDEX__">
+
+            <strong style="display:block; margin-bottom:10px;">Вариант <span class="variant-number">№__NUM__</span></strong>
+
+            <div class="section-title">Артикул продукта:</div>
+            <input type="text" class="form-control" name="variants[__INDEX__].sku" placeholder="Введите номер артикула (SKU)" required>
+
+            <!-- АТРИБУТЫ -->
+            <div class="section-title" style="margin-top:10px">Характеристики продукта:</div>
+
+            <div class="attributes"></div>
+
+            <button type="button"
+                    class="btn-1c btn-secondary"
+                    onclick="addAttribute(this)" style="margin-top:5px">
+                Добавить характеристику
+            </button>
+
+            <!-- ЦЕНЫ -->
+            <div class="section-title" style="margin-top:10px">Цены продукта:</div>
+
+            <div class="costs"></div>
+
+            <button type="button"
+                    class="btn-1c btn-secondary"
+                    onclick="addCost(this)" style="margin-top:5px">
+                Добавить цену
+            </button>
+
+            <div class="var-delete-btn">
+                <div>
+                    <button type="button" class="btn-1c btn-danger" onclick="removeVariant(this)" >Удалить вариант</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div id="attributeTemplate">
+        <div class="attribute">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" name="variants[__V__].attributes[__A__].name" class="form-control" placeholder="Название характеристики" style="width:26%;" required/>
+                <input type="text" name="variants[__V__].attributes[__A__].value" class="form-control" placeholder="Описание" style="width:27%;" required/>
+                <button type="button" class="btn-1c btn-danger" onclick="removeElement(this)">Убрать</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="costTemplate">
+        <div class="cost">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input type="number" step="0.01" name="variants[__V__].costs[__C__].basePrice" class="form-control" placeholder="Цена" style="width:20%;" required/>
+                <input type="date" name="variants[__V__].costs[__C__].validFrom" class="form-control" style="width:16%;" required/>
+                <input type="date" name="variants[__V__].costs[__C__].validTo" class="form-control" style="width:16%;" required/>
+                <button type="button" class="btn-1c btn-danger" onclick="removeElement(this)">Убрать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+    let variantIndex = 0;
+
+    function openForm() { document.getElementById('productForm').classList.add('show'); }
+    function closeForm() { document.getElementById('productForm').classList.remove('show'); document.getElementById('variantsContainer').innerHTML=''; variantIndex=0; }
+
+    function addVariant() {
+        const tpl = document.getElementById('variantTemplate').innerHTML;
+        const html = tpl.replace(/__INDEX__/g, variantIndex).replace(/__NUM__/g, variantIndex+1);
+        const container = document.createElement('div');
+        container.innerHTML = html;
+        const el = container.firstElementChild;
+        // set up data
+        el.setAttribute('data-variant-index', variantIndex);
+        // attach attribute and cost counters
+        el.dataset.attrIndex = 0;
+        el.dataset.costIndex = 0;
+        document.getElementById('variantsContainer').appendChild(el);
+        variantIndex++;
+    }
+
+    function removeVariant(btn) {
+        const variant = btn.closest('.variant');
+        variant.remove();
+    }
+
+    function addAttribute(btn) {
+        const variant = btn.closest('.variant');
+        const v = variant.getAttribute('data-variant-index');
+        let aIndex = parseInt(variant.dataset.attrIndex || 0, 10);
+        let tpl = document.getElementById('attributeTemplate').innerHTML;
+        tpl = tpl.replace(/__V__/g, v).replace(/__A__/g, aIndex);
+        const wrapper = document.createElement('div'); wrapper.innerHTML = tpl;
+        variant.querySelector('.attributes').appendChild(wrapper.firstElementChild);
+        variant.dataset.attrIndex = aIndex + 1;
+    }
+
+    function addCost(btn) {
+        const variant = btn.closest('.variant');
+        const v = variant.getAttribute('data-variant-index');
+        let cIndex = parseInt(variant.dataset.costIndex || 0, 10);
+        let tpl = document.getElementById('costTemplate').innerHTML;
+        tpl = tpl.replace(/__V__/g, v).replace(/__C__/g, cIndex);
+        const wrapper = document.createElement('div'); wrapper.innerHTML = tpl;
+        variant.querySelector('.costs').appendChild(wrapper.firstElementChild);
+        variant.dataset.costIndex = cIndex + 1;
+    }
+
+    function removeElement(btn) { btn.closest('.attribute, .cost')?.remove(); }
+
+    function toggleSidebar() { document.getElementById('sidebar')?.classList.toggle('open'); }
+
+    window.addEventListener('DOMContentLoaded', function () {
+        const successEl = document.getElementById('successMessageData');
+        const errorEl = document.getElementById('errorMessageData');
+
+        const s = successEl ? successEl.textContent.trim() : '';
+        const e = errorEl ? errorEl.textContent.trim() : '';
+
+        if (s && s.length > 0) showToast(s, 'success');
+        if (e && e.length > 0) showToast(e, 'error');
+    });
+
+    function toggleSubmenu(element) {
+        const parent = element.closest('.nav-item');
+        parent.classList.toggle('active');
+    }
+
+    function toggleVariants(productId) {
+        const row = document.getElementById('variants_row_' + productId);
+
+        if (!row) return;
+
+        const isHidden = row.style.display === 'none' || row.style.display === '';
+
+        row.style.display = isHidden ? 'table-row' : 'none';
+    }
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toastId = 'toast_' + Date.now();
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.id = toastId;
+
+        const icon = type === 'success' ? '✓' : '✗';
+        const title = type === 'success' ? 'Успешно' : 'Ошибка';
+
+        toast.innerHTML = `
+        <div class="toast-header">
+                    <span>${icon} ${title}</span>
+                    <button class="toast-close" onclick="closeToast('${toastId}')">&times;</button>
+                </div>
+        <div class="toast-body">${message}</div>
+    `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => closeToast(toastId), 4000);
+    }
+
+    function closeToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }
+
+</script>
+</body>
+</html>
