@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.kiselev.erp.dto.request.CreateProductRequest;
 import ru.kiselev.erp.dto.request.ManufacturerDto;
+import ru.kiselev.erp.exception.InvalidCostValueException;
 import ru.kiselev.erp.exception.InvalidDateRangeException;
+import ru.kiselev.erp.exception.ProductAlreadyExistsByNameException;
 import ru.kiselev.erp.exception.VariantSkuAlreadyExistException;
 import ru.kiselev.erp.repository.admin.ManufacturerRepository;
 import ru.kiselev.erp.repository.admin.ProductRepository;
@@ -134,12 +136,11 @@ public class AdminController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        // ❗ Ошибки валидации
         if (bindingResult.hasErrors()) {
             fillModel(model);
 
-            model.addAttribute("productDto", dto);          // 🔥 вернуть данные
-            model.addAttribute("showProductForm", true);    // 🔥 открыть форму
+            model.addAttribute("productDto", dto);
+            model.addAttribute("showProductForm", true);
             model.addAttribute("errorMessage", "Ошибка валидации формы");
 
             return "admin/products";
@@ -151,17 +152,18 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("successMessage", "Продукт успешно создан");
             return "redirect:/admin/products";
 
-        } catch (InvalidDateRangeException e) {
+        }
+        catch (ProductAlreadyExistsByNameException p) {
 
             fillModel(model);
 
             model.addAttribute("productDto", dto);
             model.addAttribute("showProductForm", true);
-            model.addAttribute("errorMessage", "Дата валидности цены некорректна");
+            model.addAttribute("errorMessage", "Продукт с таким названием уже существует");
 
             return "admin/products";
-
-        } catch (VariantSkuAlreadyExistException e) {
+        }
+        catch (VariantSkuAlreadyExistException e) {
 
             fillModel(model);
 
@@ -171,15 +173,28 @@ public class AdminController {
 
             return "admin/products";
 
-        } catch (Exception e) {
+        }
+        catch (InvalidCostValueException c) {
 
             fillModel(model);
 
             model.addAttribute("productDto", dto);
             model.addAttribute("showProductForm", true);
-            model.addAttribute("errorMessage", "Продукт с таким названием уже существует");
+            model.addAttribute("errorMessage", "Цена указана некорректно");
 
             return "admin/products";
+
+        }
+        catch (InvalidDateRangeException e) {
+
+            fillModel(model);
+
+            model.addAttribute("productDto", dto);
+            model.addAttribute("showProductForm", true);
+            model.addAttribute("errorMessage", "Дата валидности цены некорректна");
+
+            return "admin/products";
+
         }
     }
 

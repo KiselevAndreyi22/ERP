@@ -289,7 +289,7 @@
                 <tbody>
 
                 <tr th:if="${products.isEmpty()}">
-                    <td colspan="4" style="text-align: center;">Нет продуктов</td>
+                    <td colspan="5" style="text-align: center;">Нет продуктов</td>
                 </tr>
 
                 <th:block th:each="product : ${products}">
@@ -316,14 +316,19 @@
                         <td colspan="6">
                             <div id="var-wrap" class="variants-wrap">
                                 <div class="muted" th:if="${#lists.isEmpty(product.productVariants)}">У продукта нет вариантов</div>
+
                                 <div th:each="v, viStat : ${product.productVariants}" class="variant">
                                     <div id="var-header" class="variant-header">
                                         <strong th:text="${v.sku}">...</strong>
                                     </div>
+
                                     <div>
                                         <div id="var-attr" class="muted">Описание:</div>
                                         <ul class="attr-list" th:if="${!#lists.isEmpty(v.variantAttributes)}">
-                                            <li th:each="a : ${v.variantAttributes}" th:text="|${a.name}: ${a.value}|">Цвет: чёрный</li>
+                                            <li th:each="a : ${v.variantAttributes}"
+                                                th:text="|${a.name}: ${a.value}|">
+                                                Цвет: чёрный
+                                            </li>
                                         </ul>
                                         <div class="muted" th:if="${#lists.isEmpty(v.variantAttributes)}">Нет атрибутов</div>
                                     </div>
@@ -331,7 +336,8 @@
                                     <div style="margin-top:8px;">
                                         <div class="muted">Цены:</div>
                                         <ul class="attr-list" th:if="${!#lists.isEmpty(v.variantCosts)}">
-                                            <li th:each="c : ${v.variantCosts}" th:text="|${c.basePrice} (с ${#temporals.format(c.validFrom, 'dd.MM.yyyy')} по ${#temporals.format(c.validTo, 'dd.MM.yyyy')})|">
+                                            <li th:each="c : ${v.variantCosts}"
+                                                th:text="|${c.basePrice} (с ${#temporals.format(c.validFrom, 'dd.MM.yyyy')} по ${#temporals.format(c.validTo, 'dd.MM.yyyy')})|">
                                                 1000.00 (с 01.01.2025 по 31.12.2025)
                                             </li>
                                         </ul>
@@ -388,8 +394,8 @@
     <div id="attributeTemplate">
         <div class="attribute">
             <div style="display:flex; gap:8px; align-items:center;">
-                <input type="text" name="variants[__V__].attributes[__A__].name" class="form-control" placeholder="Название характеристики" style="width:26%;" required/>
-                <input type="text" name="variants[__V__].attributes[__A__].value" class="form-control" placeholder="Описание" style="width:27%;" required/>
+                <input type="text" name="variants[__V__].variantAttributes[__A__].name" class="form-control" placeholder="Название характеристики" style="width:26%;" required/>
+                <input type="text" name="variants[__V__].variantAttributes[__A__].value" class="form-control" placeholder="Описание" style="width:27%;" required/>
                 <button type="button" class="btn-1c btn-danger" onclick="removeElement(this)">Убрать</button>
             </div>
         </div>
@@ -398,9 +404,9 @@
     <div id="costTemplate">
         <div class="cost">
             <div style="display:flex; gap:8px; align-items:center;">
-                <input type="number" step="0.01" name="variants[__V__].costs[__C__].basePrice" class="form-control" placeholder="Цена" style="width:20%;" required/>
-                <input type="date" name="variants[__V__].costs[__C__].validFrom" class="form-control" style="width:16%;" required/>
-                <input type="date" name="variants[__V__].costs[__C__].validTo" class="form-control" style="width:16%;" required/>
+                <input type="number" step="0.01" name="variants[__V__].variantCosts[__C__].basePrice" class="form-control" placeholder="Цена" style="width:20%;" required/>
+                <input type="date" name="variants[__V__].variantCosts[__C__].validFrom" class="form-control" style="width:16%;" required/>
+                <input type="date" name="variants[__V__].variantCosts[__C__].validTo" class="form-control" style="width:16%;" required/>
                 <button type="button" class="btn-1c btn-danger" onclick="removeElement(this)">Убрать</button>
             </div>
         </div>
@@ -558,7 +564,7 @@
         if (!errorMessage) return;
 
         if (errorMessage.includes('Дата валидности цены некорректна')) {
-            highlightFieldsByPattern(/\.costs\[\d+\]\.(validFrom|validTo)$/);
+            highlightFieldsByPattern(/\.variantCosts\[\d+\]\.(validFrom|validTo)$/);
         }
 
         if (errorMessage.includes('Такой артикул уже существует')) {
@@ -622,10 +628,10 @@
             const costIndexes = new Set();
 
             Object.keys(variantData).forEach(key => {
-                const attrMatch = key.match(/^attributes\[(\d+)\]\./);
+                const attrMatch = key.match(/^variantAttributes\[(\d+)\]\./);
                 if (attrMatch) attributeIndexes.add(attrMatch[1]);
 
-                const costMatch = key.match(/^costs\[(\d+)\]\./);
+                const costMatch = key.match(/^variantCosts\[(\d+)\]\./);
                 if (costMatch) costIndexes.add(costMatch[1]);
             });
 

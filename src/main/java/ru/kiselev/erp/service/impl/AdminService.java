@@ -3,13 +3,14 @@ package ru.kiselev.erp.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.kiselev.erp.dto.request.*;
 import ru.kiselev.erp.dto.response.ProductResponse;
 import ru.kiselev.erp.dto.response.UserDto;
+import ru.kiselev.erp.exception.InvalidCostValueException;
 import ru.kiselev.erp.exception.InvalidDateRangeException;
+import ru.kiselev.erp.exception.ProductAlreadyExistsByNameException;
 import ru.kiselev.erp.exception.VariantSkuAlreadyExistException;
 import ru.kiselev.erp.model.Role;
 import ru.kiselev.erp.model.User;
@@ -22,6 +23,7 @@ import ru.kiselev.erp.repository.admin.VariantAttributeRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -82,6 +84,11 @@ public class AdminService {
     public Product createProduct(CreateProductRequest request){
 
         Product product = new Product();
+
+        if(productRepository.existsByName(request.getName())) {
+            throw new ProductAlreadyExistsByNameException();
+        }
+
         product.setName(request.getName());
         product.setType(request.getType());
 
@@ -102,8 +109,8 @@ public class AdminService {
 
                 product.getProductVariants().add(productVariant);
 
-                if (productVariantDto.getAttributes() != null) {
-                    for (VariantAttributeDto attributeDto : productVariantDto.getAttributes()) {
+                if (productVariantDto.getVariantAttributes() != null) {
+                    for (VariantAttributeDto attributeDto : productVariantDto.getVariantAttributes()) {
 
                         VariantAttribute variantAttribute = new VariantAttribute();
                         variantAttribute.setName(attributeDto.getName());
@@ -114,11 +121,16 @@ public class AdminService {
                     }
                 }
 
-                if (productVariantDto.getCosts() != null) {
-                    for (VariantCostDto dto : productVariantDto.getCosts()) {
+                if (productVariantDto.getVariantCosts() != null) {
+                    for (VariantCostDto dto : productVariantDto.getVariantCosts()) {
 
                         VariantCost variantCost = new VariantCost();
                         variantCost.setProductVariant(productVariant);
+
+                        if(dto.getBasePrice() <= 0){
+                            throw new InvalidCostValueException();
+                        }
+
                         variantCost.setBasePrice(dto.getBasePrice());
 
                         if(dto.getValidFrom().isBefore(LocalDate.now())) {
@@ -149,7 +161,7 @@ public class AdminService {
 
         productVariantDto.setSku(productVariant.getSku());
 
-        productVariantDto.setAttributes(
+        productVariantDto.setVariantAttributes(
                 productVariant.getVariantAttributes().stream()
                         .map(attr->{
                             VariantAttributeDto variantAttributeDto = new VariantAttributeDto();
@@ -160,17 +172,30 @@ public class AdminService {
                         .toList()
         );
 
+        productVariantDto.setVariantCosts(
+                productVariant.getVariantCosts().stream()
+                        .map(cost->{
+                            VariantCostDto variantCostDto = new VariantCostDto();
+                            variantCostDto.setBasePrice(cost.getBasePrice());
+                            variantCostDto.setValidFrom(cost.getValidFrom());
+                            variantCostDto.setValidTo(cost.getValidTo());
+                            return variantCostDto;
+                        })
+                        .toList()
+        );
+
         return productVariantDto;
     }
 
     private ProductResponse mapToProductResponse(Product product){
         ProductResponse productResponse = new ProductResponse();
 
+        productResponse.setId(product.getId());
         productResponse.setName(product.getName());
         productResponse.setType(product.getType());
-        Manufacturer manufacturer = product.getManufacturer();
+        productResponse.setManufacturer(product.getManufacturer());
 
-        productResponse.setVariants(
+        productResponse.setProductVariants(
                 product.getProductVariants().stream()
                         .map(this::mapToProductVariantDto)
                         .toList()
@@ -179,16 +204,11 @@ public class AdminService {
         return productResponse;
     }
 
-    public List<Product> getAllProducts(){
-        return productRepository.findAll();
-    }
-
-    public List<ProductVariant> getAllProductVariantsById(Long productId){
-        return productVariantRepository.findAllByProductId(productId);
-    }
-
-    public List<VariantAttribute> getAllVariantAttributesByVariantId(Long variantId){
-        return variantAttributeRepository.findAllById(variantId);
+    public List<ProductResponse> getAllProducts(){
+        return productRepository.findAll()
+                .stream()
+                .map(this::mapToProductResponse)
+                .toList();
     }
 
     public ProductType[] getAllProductTypes(){

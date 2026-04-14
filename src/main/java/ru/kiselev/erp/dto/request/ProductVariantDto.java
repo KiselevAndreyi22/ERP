@@ -15,7 +15,7 @@ public class ProductVariantDto {
     @NotBlank(message = "Это поле требует обязательного ввода!")
     private String sku;
 
-    private List<VariantAttributeDto> attributes;
+    private List<VariantAttributeDto> variantAttributes;
 
-    private List<VariantCostDto> costs;
+    private List<VariantCostDto> variantCosts;
 }

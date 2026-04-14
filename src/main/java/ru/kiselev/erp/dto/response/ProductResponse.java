@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.kiselev.erp.dto.request.ProductVariantDto;
+import ru.kiselev.erp.model.admin.Manufacturer;
 import ru.kiselev.erp.model.admin.ProductType;
 
 import java.util.List;
@@ -13,12 +14,14 @@ import java.util.List;
 @NoArgsConstructor
 public class ProductResponse {
 
+    private Long id;
+
     private String name;
 
     private ProductType type;
 
-    private Long manufacturerId;
+    private Manufacturer manufacturer;
 
-    private List<ProductVariantDto> variants;
+    private List<ProductVariantDto> productVariants;
 
 }
