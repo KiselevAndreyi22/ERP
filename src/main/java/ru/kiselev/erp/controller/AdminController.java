@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.kiselev.erp.dto.request.CreateProductRequest;
 import ru.kiselev.erp.dto.request.ManufacturerDto;
+import ru.kiselev.erp.exception.InvalidDateRangeException;
+import ru.kiselev.erp.exception.VariantSkuAlreadyExistException;
 import ru.kiselev.erp.repository.admin.ManufacturerRepository;
 import ru.kiselev.erp.repository.admin.ProductRepository;
 import ru.kiselev.erp.service.impl.AdminService;
@@ -77,7 +79,8 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("successMessage", "Производитель успешно создан");
             return "redirect:/admin/manufacturers";
 
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при создании производителя");
             return "redirect:/admin/manufacturers";
         }
@@ -93,7 +96,8 @@ public class AdminController {
             } else {
                 redirectAttributes.addFlashAttribute("errorMessage", "Производитель не найден");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении производителя");
         }
 
@@ -101,48 +105,82 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public String listProducts(//@PathVariable Long productId,
-                               //@PathVariable Long variantId,
-                               Model model) {
+    public String listProducts(Model model) {
         model.addAttribute("products", adminService.getAllProducts());
-        //model.addAttribute("productVariants", adminService.getAllProductVariantsById(productId));
-        //model.addAttribute("VariantAttributes", adminService.getAllVariantAttributesByVariantId(variantId));
         model.addAttribute("manufacturers", adminService.getAllManufacturers());
         model.addAttribute("productTypes", adminService.getAllProductTypes());
-        model.addAttribute("showProductForm", false);
+
+        if (!model.containsAttribute("productDto")) {
+            model.addAttribute("productDto", new CreateProductRequest());
+        }
+
+        if (!model.containsAttribute("showProductForm")) {
+            model.addAttribute("showProductForm", false);
+        }
+
         return "admin/products";
     }
 
+    private void fillModel(Model model) {
+        model.addAttribute("products", adminService.getAllProducts());
+        model.addAttribute("manufacturers", adminService.getAllManufacturers());
+        model.addAttribute("productTypes", adminService.getAllProductTypes());
+    }
+
     @PostMapping("/products/save")
-    public String addProduct(@Valid @ModelAttribute("productDto") CreateProductRequest createProductRequest,
-                             BindingResult bindingResult,
-                             RedirectAttributes redirectAttributes) {
+    public String addProduct(
+            @Valid @ModelAttribute("productDto") CreateProductRequest dto,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
+        // ❗ Ошибки валидации
         if (bindingResult.hasErrors()) {
+            fillModel(model);
 
-            String error = bindingResult.getFieldErrors()
-                    .stream()
-                    .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                    .findFirst()
-                    .orElse("Ошибка валидации формы");
+            model.addAttribute("productDto", dto);          // 🔥 вернуть данные
+            model.addAttribute("showProductForm", true);    // 🔥 открыть форму
+            model.addAttribute("errorMessage", "Ошибка валидации формы");
 
-            redirectAttributes.addFlashAttribute("errorMessage", error);
-            redirectAttributes.addFlashAttribute("showProductForm", true);
-
-            return "redirect:/admin/products";
+            return "admin/products";
         }
 
         try {
-            adminService.createProduct(createProductRequest);
+            adminService.createProduct(dto);
+
             redirectAttributes.addFlashAttribute("successMessage", "Продукт успешно создан");
+            return "redirect:/admin/products";
 
-        }catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Продукт с таким названием уже существует");
-            redirectAttributes.addFlashAttribute("showProductForm", true);
+        } catch (InvalidDateRangeException e) {
+
+            fillModel(model);
+
+            model.addAttribute("productDto", dto);
+            model.addAttribute("showProductForm", true);
+            model.addAttribute("errorMessage", "Дата валидности цены некорректна");
+
+            return "admin/products";
+
+        } catch (VariantSkuAlreadyExistException e) {
+
+            fillModel(model);
+
+            model.addAttribute("productDto", dto);
+            model.addAttribute("showProductForm", true);
+            model.addAttribute("errorMessage", "Такой артикул уже существует");
+
+            return "admin/products";
+
+        } catch (Exception e) {
+
+            fillModel(model);
+
+            model.addAttribute("productDto", dto);
+            model.addAttribute("showProductForm", true);
+            model.addAttribute("errorMessage", "Продукт с таким названием уже существует");
+
+            return "admin/products";
         }
-
-        return "redirect:/admin/products";
     }
 
     @PostMapping("/products/delete/{id}")
@@ -155,7 +193,8 @@ public class AdminController {
             } else {
                 redirectAttributes.addFlashAttribute("errorMessage", "Продукт не найден");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении продукта");
         }
 

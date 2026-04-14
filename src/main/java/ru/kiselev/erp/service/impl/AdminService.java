@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import ru.kiselev.erp.dto.request.*;
 import ru.kiselev.erp.dto.response.ProductResponse;
 import ru.kiselev.erp.dto.response.UserDto;
+import ru.kiselev.erp.exception.InvalidDateRangeException;
+import ru.kiselev.erp.exception.VariantSkuAlreadyExistException;
 import ru.kiselev.erp.model.Role;
 import ru.kiselev.erp.model.User;
 import ru.kiselev.erp.model.admin.*;
@@ -18,6 +20,7 @@ import ru.kiselev.erp.repository.admin.ProductRepository;
 import ru.kiselev.erp.repository.admin.ProductVariantRepository;
 import ru.kiselev.erp.repository.admin.VariantAttributeRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,7 +79,7 @@ public class AdminService {
     }
 
     @Transactional
-    public void createProduct(CreateProductRequest request){
+    public Product createProduct(CreateProductRequest request){
 
         Product product = new Product();
         product.setName(request.getName());
@@ -90,6 +93,10 @@ public class AdminService {
             for (ProductVariantDto productVariantDto : request.getVariants()) {
 
                 ProductVariant productVariant = new ProductVariant();
+
+                if(productVariantRepository.existsBySku(productVariantDto.getSku())){
+                    throw new VariantSkuAlreadyExistException();
+                }
                 productVariant.setSku(productVariantDto.getSku());
                 productVariant.setProduct(product);
 
@@ -113,6 +120,15 @@ public class AdminService {
                         VariantCost variantCost = new VariantCost();
                         variantCost.setProductVariant(productVariant);
                         variantCost.setBasePrice(dto.getBasePrice());
+
+                        if(dto.getValidFrom().isBefore(LocalDate.now())) {
+                            throw new InvalidDateRangeException();
+                        }
+
+                        if(dto.getValidTo().isBefore(LocalDate.now())) {
+                            throw new InvalidDateRangeException();
+                        }
+
                         variantCost.setValidFrom(dto.getValidFrom());
                         variantCost.setValidTo(dto.getValidTo());
 
@@ -121,11 +137,7 @@ public class AdminService {
                 }
             }
         }
-        try {
-            productRepository.saveAndFlush(product);
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalArgumentException("Продукт уже существует", e);
-        }
+        return productRepository.save(product);
     }
 
     public void deleteProductById(Long id){

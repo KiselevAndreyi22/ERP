@@ -5,10 +5,9 @@
     <meta charset="UTF-8">
     <title>ERP Система - Продукты</title>
     <style>
-        /* Базовые стили взяты из list.html - компактная версия */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; overflow-x: hidden; }
-        /* Боковое меню */
+
         .sidebar { position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; transition: all 0.3s ease; }
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
         .sidebar-header h2 { font-size: 20px; font-weight: 600; margin: 0; color: white; }
@@ -34,7 +33,6 @@
         .logout-btn { position: absolute; bottom: 20px; left: 15px; right: 15px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; }
         .logout-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); }
 
-        /* основной контент */
         .main-content { margin-left: 280px; padding: 20px; min-height: 100vh; transition: all 0.3s ease; }
         .top-bar { margin-left:60px; width:80%; background: white; border-radius: 12px; padding: 15px 25px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
         .page-title { font-size: 24px; font-weight: 600; color: #333; }
@@ -44,19 +42,41 @@
         .btn-success { background: #28a745; color: white; }
         .btn-secondary { background: #6c757d; color: white; }
         .btn-danger { background: #dc3545; color: white; }
+
         .form-container { display: none; background: #f8f9fa; padding: 20px; border-radius: 20px; margin-top: 16px; margin-bottom: 30px; border: 1px solid #e9ecef;}
         .form-container.show { display: block; }
+
         .form-group { margin-bottom: 16px; }
         .form-group label { display:block; margin-bottom:6px; font-weight:600; color:#495057; }
-        .form-control { width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; }
+
+        .form-control {
+            width:100%;
+            padding:10px;
+            border:1px solid #ced4da;
+            border-radius:6px;
+            outline: none;
+            transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+        }
+
+        .form-control:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,.15);
+        }
+
         .small { font-size:13px; color:#6c757d; }
         .table-container { overflow-x:auto; margin-top:10px; }
         table { width:100%; border-collapse:collapse; }
         th,td { padding:12px; text-align:left; border-bottom:1px solid #e9ecef; }
 
-        /*Отображение вариантов*/
         .variants-row{display: flex}
-        .variant, .attribute, .cost { background:#fff; border-radius:6px; padding:10px; margin-bottom:10px; border:1px solid #e9ecef; display: block }
+        .variant, .attribute, .cost {
+            background:#fff;
+            border-radius:6px;
+            padding:10px;
+            margin-bottom:10px;
+            border:1px solid #e9ecef;
+            display: block
+        }
         .variant-header {justify-content:space-between; align-items:center; gap:8px; display:flex }
         .var-delete-btn { float: right; margin-top:5px;}
         .muted { color:#6c757d; font-size:15px; margin-top: 5px;}
@@ -73,7 +93,6 @@
 
         .section-title{margin-bottom:5px;}
 
-        /* Уведомления (правый нижний угол) */
         .toast-container {
             position: fixed;
             bottom: 20px;
@@ -102,17 +121,6 @@
             to {
                 transform: translateX(0);
                 opacity: 1;
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
             }
         }
 
@@ -155,11 +163,26 @@
             color: #999;
         }
 
+        .input-error {
+            border: 1px solid #dc3545 !important;
+            background-color: #fff5f5 !important;
+            box-shadow: 0 0 0 0.15rem rgba(220,53,69,.15) !important;
+        }
+
+        .input-error:focus {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220,53,69,.2) !important;
+        }
+
+        .error-text {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
 
-<!-- Боковое меню -->
 <div th:replace="~{menu/sidebar.html :: sidebar}"></div>
 
 <div class="main-content">
@@ -173,9 +196,17 @@
         <div id="successMessageData" th:text="${successMessage}" style="display:none;"></div>
         <div id="errorMessageData" th:text="${errorMessage}" style="display:none;"></div>
 
+        <div id="serverFieldErrors" style="display:none;">
+            <th:block th:each="err : ${#fields.detailedErrors()}">
+                <span th:if="${!err.global}"
+                      class="server-field-error"
+                      th:attr="data-field=${err.fieldName},data-message=${err.message}">
+                </span>
+            </th:block>
+        </div>
+
         <button class="btn-1c btn-primary" style="margin-bottom:15px;" onclick="openForm()">➕ Добавить продукт</button>
 
-        <!-- Форма добавления продукта -->
         <div id="productForm"
              class="form-container"
              th:classappend="${showProductForm} ? ' show' : ''">
@@ -186,25 +217,46 @@
 
                 <div class="form-group">
                     <label for="name">Наименование:</label>
-                    <input id="name" name="name" type="text" class="form-control" placeholder="Введите название" required />
+                    <input id="name"
+                           th:field="*{name}"
+                           type="text"
+                           class="form-control"
+                           placeholder="Введите название"
+                           required />
+                    <div class="error-text"
+                         th:if="${#fields.hasErrors('name')}"
+                         th:errors="*{name}"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="type">Категория продукта:</label>
-                    <select id="type" name="type" class="form-control" required>
+                    <select id="type"
+                            th:field="*{type}"
+                            class="form-control"
+                            required>
                         <option value="">Выберите категорию продукта</option>
                         <option th:each="type : ${productTypes}"
                                 th:value="${type.name()}"
                                 th:text="${type.rusName}">
                         </option>
                     </select>
+                    <div class="error-text"
+                         th:if="${#fields.hasErrors('type')}"
+                         th:errors="*{type}"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="manufacturer">Наименование производителя:</label>
-                    <select id="manufacturer" name="manufacturerId" class="form-control" required>
+                    <select id="manufacturer"
+                            th:field="*{manufacturerId}"
+                            class="form-control"
+                            required>
+                        <option value="">Выберите производителя</option>
                         <option th:each="m : ${manufacturers}" th:value="${m.id}" th:text="${m.name}">Производитель</option>
                     </select>
+                    <div class="error-text"
+                         th:if="${#fields.hasErrors('manufacturerId')}"
+                         th:errors="*{manufacturerId}"></div>
                 </div>
 
                 <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
@@ -222,7 +274,6 @@
             </form>
         </div>
 
-        <!-- Список продуктов -->
         <h3 style="margin:10px 0 15px 0;">Список продуктов</h3>
         <div class="table-container">
             <table>
@@ -242,8 +293,6 @@
                 </tr>
 
                 <th:block th:each="product : ${products}">
-
-                    <!-- Основная строка -->
                     <tr>
                         <td th:text="${product.id}"></td>
                         <td th:text="${product.name}"></td>
@@ -261,7 +310,6 @@
                         </td>
                     </tr>
 
-                    <!-- Строка вариантов -->
                     <tr class="variants-row"
                         th:id="${'variants_row_' + product.id}"
                         style="display: none;">
@@ -279,42 +327,36 @@
                                         </ul>
                                         <div class="muted" th:if="${#lists.isEmpty(v.variantAttributes)}">Нет атрибутов</div>
                                     </div>
-                                    <!-- Если нужно, можно показать и цены -->
-                                    <!--
+
                                     <div style="margin-top:8px;">
                                         <div class="muted">Цены:</div>
                                         <ul class="attr-list" th:if="${!#lists.isEmpty(v.variantCosts)}">
-                                            <li th:each="c : ${v.variantCosts}" th:text="|${c.basePrice} (с ${#temporals.format(c.validFrom, 'dd.MM.yyyy')} по ${#temporals.format(c.validTo, 'dd.MM.yyyy')})|">1000.00 (с 01.01.2025 по 31.12.2025)</li>
+                                            <li th:each="c : ${v.variantCosts}" th:text="|${c.basePrice} (с ${#temporals.format(c.validFrom, 'dd.MM.yyyy')} по ${#temporals.format(c.validTo, 'dd.MM.yyyy')})|">
+                                                1000.00 (с 01.01.2025 по 31.12.2025)
+                                            </li>
                                         </ul>
                                         <div class="muted" th:if="${#lists.isEmpty(v.variantCosts)}">Нет цен</div>
                                     </div>
-                                    -->
                                 </div>
                             </div>
                         </td>
                     </tr>
-
                 </th:block>
 
                 </tbody>
             </table>
         </div>
-
     </div>
 </div>
 
-<!-- Шаблоны для JS (клонируются) -->
 <div id="templates" style="display:none;">
-    <!-- Вариант -->
     <div id="variantTemplate">
         <div class="variant" data-index="__INDEX__">
-
             <strong style="display:block; margin-bottom:10px;">Вариант <span class="variant-number">№__NUM__</span></strong>
 
             <div class="section-title">Артикул продукта:</div>
             <input type="text" class="form-control" name="variants[__INDEX__].sku" placeholder="Введите номер артикула (SKU)" required>
 
-            <!-- АТРИБУТЫ -->
             <div class="section-title" style="margin-top:10px">Характеристики продукта:</div>
 
             <div class="attributes"></div>
@@ -325,7 +367,6 @@
                 Добавить характеристику
             </button>
 
-            <!-- ЦЕНЫ -->
             <div class="section-title" style="margin-top:10px">Цены продукта:</div>
 
             <div class="costs"></div>
@@ -338,13 +379,11 @@
 
             <div class="var-delete-btn">
                 <div>
-                    <button type="button" class="btn-1c btn-danger" onclick="removeVariant(this)" >Удалить вариант</button>
+                    <button type="button" class="btn-1c btn-danger" onclick="removeVariant(this)">Удалить вариант</button>
                 </div>
             </div>
-
         </div>
     </div>
-
 
     <div id="attributeTemplate">
         <div class="attribute">
@@ -373,18 +412,25 @@
 <script>
     let variantIndex = 0;
 
-    function openForm() { document.getElementById('productForm').classList.add('show'); }
-    function closeForm() { document.getElementById('productForm').classList.remove('show'); document.getElementById('variantsContainer').innerHTML=''; variantIndex=0; }
+    function openForm() {
+        document.getElementById('productForm').classList.add('show');
+    }
+
+    function closeForm() {
+        document.getElementById('productForm').classList.remove('show');
+        document.getElementById('variantsContainer').innerHTML = '';
+        variantIndex = 0;
+        clearSavedForm();
+        clearHighlightedFields();
+    }
 
     function addVariant() {
         const tpl = document.getElementById('variantTemplate').innerHTML;
-        const html = tpl.replace(/__INDEX__/g, variantIndex).replace(/__NUM__/g, variantIndex+1);
+        const html = tpl.replace(/__INDEX__/g, variantIndex).replace(/__NUM__/g, variantIndex + 1);
         const container = document.createElement('div');
         container.innerHTML = html;
         const el = container.firstElementChild;
-        // set up data
         el.setAttribute('data-variant-index', variantIndex);
-        // attach attribute and cost counters
         el.dataset.attrIndex = 0;
         el.dataset.costIndex = 0;
         document.getElementById('variantsContainer').appendChild(el);
@@ -402,7 +448,8 @@
         let aIndex = parseInt(variant.dataset.attrIndex || 0, 10);
         let tpl = document.getElementById('attributeTemplate').innerHTML;
         tpl = tpl.replace(/__V__/g, v).replace(/__A__/g, aIndex);
-        const wrapper = document.createElement('div'); wrapper.innerHTML = tpl;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = tpl;
         variant.querySelector('.attributes').appendChild(wrapper.firstElementChild);
         variant.dataset.attrIndex = aIndex + 1;
     }
@@ -413,25 +460,19 @@
         let cIndex = parseInt(variant.dataset.costIndex || 0, 10);
         let tpl = document.getElementById('costTemplate').innerHTML;
         tpl = tpl.replace(/__V__/g, v).replace(/__C__/g, cIndex);
-        const wrapper = document.createElement('div'); wrapper.innerHTML = tpl;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = tpl;
         variant.querySelector('.costs').appendChild(wrapper.firstElementChild);
         variant.dataset.costIndex = cIndex + 1;
     }
 
-    function removeElement(btn) { btn.closest('.attribute, .cost')?.remove(); }
+    function removeElement(btn) {
+        btn.closest('.attribute, .cost')?.remove();
+    }
 
-    function toggleSidebar() { document.getElementById('sidebar')?.classList.toggle('open'); }
-
-    window.addEventListener('DOMContentLoaded', function () {
-        const successEl = document.getElementById('successMessageData');
-        const errorEl = document.getElementById('errorMessageData');
-
-        const s = successEl ? successEl.textContent.trim() : '';
-        const e = errorEl ? errorEl.textContent.trim() : '';
-
-        if (s && s.length > 0) showToast(s, 'success');
-        if (e && e.length > 0) showToast(e, 'error');
-    });
+    function toggleSidebar() {
+        document.getElementById('sidebar')?.classList.toggle('open');
+    }
 
     function toggleSubmenu(element) {
         const parent = element.closest('.nav-item');
@@ -440,11 +481,9 @@
 
     function toggleVariants(productId) {
         const row = document.getElementById('variants_row_' + productId);
-
         if (!row) return;
 
         const isHidden = row.style.display === 'none' || row.style.display === '';
-
         row.style.display = isHidden ? 'table-row' : 'none';
     }
 
@@ -461,15 +500,14 @@
         const title = type === 'success' ? 'Успешно' : 'Ошибка';
 
         toast.innerHTML = `
-        <div class="toast-header">
-                    <span>${icon} ${title}</span>
-                    <button class="toast-close" onclick="closeToast('${toastId}')">&times;</button>
-                </div>
-        <div class="toast-body">${message}</div>
-    `;
+            <div class="toast-header">
+                <span>${icon} ${title}</span>
+                <button class="toast-close" onclick="closeToast('${toastId}')">&times;</button>
+            </div>
+            <div class="toast-body">${message}</div>
+        `;
 
         container.appendChild(toast);
-
         setTimeout(() => closeToast(toastId), 4000);
     }
 
@@ -481,6 +519,171 @@
         }
     }
 
+    function clearSavedForm() {
+        localStorage.removeItem('productFormData');
+    }
+
+    function clearHighlightedFields() {
+        document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+    }
+
+    function highlightFieldByName(fieldName) {
+        const selector = `[name="${cssEscape(fieldName)}"]`;
+        const field = document.querySelector(selector);
+        if (field) {
+            field.classList.add('input-error');
+        }
+    }
+
+    function highlightFieldsByPattern(pattern) {
+        document.querySelectorAll('[name]').forEach(el => {
+            const name = el.getAttribute('name') || '';
+            if (pattern.test(name)) {
+                el.classList.add('input-error');
+            }
+        });
+    }
+
+    function applyServerFieldHighlights() {
+        const errorNodes = document.querySelectorAll('.server-field-error');
+        errorNodes.forEach(node => {
+            const fieldName = node.dataset.field;
+            if (fieldName) {
+                highlightFieldByName(fieldName);
+            }
+        });
+    }
+
+    function applyCustomErrorHighlights(errorMessage) {
+        if (!errorMessage) return;
+
+        if (errorMessage.includes('Дата валидности цены некорректна')) {
+            highlightFieldsByPattern(/\.costs\[\d+\]\.(validFrom|validTo)$/);
+        }
+
+        if (errorMessage.includes('Такой артикул уже существует')) {
+            highlightFieldsByPattern(/\.sku$/);
+        }
+
+        if (errorMessage.includes('Продукт с таким названием уже существует')) {
+            highlightFieldByName('name');
+        }
+
+        if (errorMessage.includes('Ошибка валидации формы')) {
+            applyServerFieldHighlights();
+        }
+    }
+
+    function cssEscape(value) {
+        if (window.CSS && CSS.escape) {
+            return CSS.escape(value);
+        }
+        return value.replace(/"/g, '\\"');
+    }
+
+    document.getElementById('createProductForm').addEventListener('submit', function () {
+        const formData = new FormData(this);
+        const obj = {};
+
+        formData.forEach((value, key) => {
+            obj[key] = value;
+        });
+
+        localStorage.setItem('productFormData', JSON.stringify(obj));
+    });
+
+    function restoreVariants(data) {
+        if (!data || Object.keys(data).length === 0) return;
+
+        const variantMap = {};
+
+        for (let key in data) {
+            const match = key.match(/variants\[(\d+)\]\.(.+)/);
+            if (!match) continue;
+
+            const vIndex = match[1];
+            const field = match[2];
+
+            if (!variantMap[vIndex]) {
+                variantMap[vIndex] = {};
+            }
+
+            variantMap[vIndex][field] = data[key];
+        }
+
+        Object.keys(variantMap).forEach(vIndex => {
+            addVariant();
+
+            const variants = document.querySelectorAll('#variantsContainer .variant');
+            const currentVariant = variants[variants.length - 1];
+            const variantData = variantMap[vIndex];
+
+            const attributeIndexes = new Set();
+            const costIndexes = new Set();
+
+            Object.keys(variantData).forEach(key => {
+                const attrMatch = key.match(/^attributes\[(\d+)\]\./);
+                if (attrMatch) attributeIndexes.add(attrMatch[1]);
+
+                const costMatch = key.match(/^costs\[(\d+)\]\./);
+                if (costMatch) costIndexes.add(costMatch[1]);
+            });
+
+            attributeIndexes.forEach(() => {
+                const btn = currentVariant.querySelector('button[onclick="addAttribute(this)"]');
+                addAttribute(btn);
+            });
+
+            costIndexes.forEach(() => {
+                const btn = currentVariant.querySelector('button[onclick="addCost(this)"]');
+                addCost(btn);
+            });
+
+            Object.keys(variantData).forEach(field => {
+                const input = currentVariant.querySelector(`[name="variants[${vIndex}].${field}"]`);
+                if (input) {
+                    input.value = variantData[field];
+                }
+            });
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+        const successEl = document.getElementById('successMessageData');
+        const errorEl = document.getElementById('errorMessageData');
+
+        const s = successEl ? successEl.textContent.trim() : '';
+        const e = errorEl ? errorEl.textContent.trim() : '';
+
+        if (s) {
+            showToast(s, 'success');
+            clearSavedForm();
+        }
+
+        if (e) {
+            showToast(e, 'error');
+        }
+
+        const formVisible = document.getElementById('productForm').classList.contains('show');
+        if (!formVisible) return;
+
+        const saved = localStorage.getItem('productFormData');
+        if (saved) {
+            const data = JSON.parse(saved);
+
+            for (let key in data) {
+                const input = document.querySelector(`[name="${cssEscape(key)}"]`);
+                if (input) {
+                    input.value = data[key];
+                }
+            }
+
+            restoreVariants(data);
+        }
+
+        applyServerFieldHighlights();
+        applyCustomErrorHighlights(e);
+    });
 </script>
 </body>
 </html>
