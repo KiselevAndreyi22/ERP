@@ -12,6 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 public class ProductVariantDto {
 
+    private Long id;
+
     @NotBlank(message = "Это поле требует обязательного ввода!")
     private String sku;
 

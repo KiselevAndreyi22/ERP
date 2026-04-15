@@ -37,13 +37,14 @@
         .top-bar { margin-left:60px; width:80%; background: white; border-radius: 12px; padding: 15px 25px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
         .page-title { font-size: 24px; font-weight: 600; color: #333; }
         .content-container { margin-left: 60px; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width:80%; }
+
         .btn-1c { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: #2a5298; color: white; }
         .btn-success { background: #28a745; color: white; }
         .btn-secondary { background: #6c757d; color: white; }
         .btn-danger { background: #dc3545; color: white; }
 
-        .form-container { display: none; background: #f8f9fa; padding: 20px; border-radius: 20px; margin-top: 16px; margin-bottom: 30px; border: 1px solid #e9ecef;}
+        .form-container { display: none; background: #f8f9fa; padding: 20px; border-radius: 20px; margin-top: 16px; margin-bottom: 20px; border: 1px solid #e9ecef; }
         .form-container.show { display: block; }
 
         .form-group { margin-bottom: 16px; }
@@ -54,7 +55,7 @@
             padding:10px;
             border:1px solid #ced4da;
             border-radius:6px;
-            outline: none;
+            outline:none;
             transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
         }
 
@@ -63,35 +64,46 @@
             box-shadow: 0 0 0 0.2rem rgba(13,110,253,.15);
         }
 
-        .small { font-size:13px; color:#6c757d; }
         .table-container { overflow-x:auto; margin-top:10px; }
         table { width:100%; border-collapse:collapse; }
-        th,td { padding:12px; text-align:left; border-bottom:1px solid #e9ecef; }
+        th,td { padding:12px; text-align:left; border-bottom:1px solid #e9ecef; vertical-align: top; }
 
-        .variants-row{display: flex}
+        .variants-row { display: flex; }
         .variant, .attribute, .cost {
             background:#fff;
             border-radius:6px;
             padding:10px;
             margin-bottom:10px;
             border:1px solid #e9ecef;
-            display: block
+            display:block;
         }
-        .variant-header {justify-content:space-between; align-items:center; gap:8px; display:flex }
-        .var-delete-btn { float: right; margin-top:5px;}
-        .muted { color:#6c757d; font-size:15px; margin-top: 5px;}
-        .attr-list { list-style: none; margin-top: 5px;}
+        .variant-header { justify-content:space-between; align-items:center; gap:8px; display:flex; }
+        .var-delete-btn { float:right; margin-top:5px; }
+        .muted { color:#6c757d; font-size:15px; margin-top:5px; }
+        .attr-list { list-style:none; margin-top:5px; }
+        .section-title { margin-bottom:5px; }
+
+        .edit-row-cell {
+            padding: 0 12px 16px 12px;
+            background: #f8f9fa;
+        }
+
+        .inline-edit-wrapper {
+            background: #f8f9fa;
+            border-radius: 16px;
+            border: 1px solid #e9ecef;
+            padding: 16px;
+            margin: 8px 0 4px 0;
+        }
 
         .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
+            display:none;
+            background:none;
+            border:none;
+            font-size:24px;
+            cursor:pointer;
+            color:#666;
         }
-
-        .section-title{margin-bottom:5px;}
 
         .toast-container {
             position: fixed;
@@ -124,23 +136,10 @@
             }
         }
 
-        .toast-success {
-            border-left: 4px solid #28a745;
-        }
-
-        .toast-success .toast-header {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .toast-error {
-            border-left: 4px solid #dc3545;
-        }
-
-        .toast-error .toast-header {
-            background: #f8d7da;
-            color: #721c24;
-        }
+        .toast-success { border-left: 4px solid #28a745; }
+        .toast-success .toast-header { background: #d4edda; color: #155724; }
+        .toast-error { border-left: 4px solid #dc3545; }
+        .toast-error .toast-header { background: #f8d7da; color: #721c24; }
 
         .toast-header {
             padding: 12px 15px;
@@ -150,10 +149,7 @@
             font-weight: 600;
         }
 
-        .toast-body {
-            padding: 12px 15px;
-            color: #333;
-        }
+        .toast-body { padding: 12px 15px; color: #333; }
 
         .toast-close {
             background: none;
@@ -179,6 +175,26 @@
             font-size: 12px;
             color: #dc3545;
         }
+
+        .modal {
+            display:none;
+            position:fixed;
+            z-index:1100;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background:white;
+            margin:15% auto;
+            padding:25px;
+            border-radius:12px;
+            width:400px;
+            text-align:center;
+        }
     </style>
 </head>
 <body>
@@ -193,6 +209,10 @@
     </div>
 
     <div class="content-container">
+
+        <input type="hidden" id="csrfName" th:value="${_csrf.parameterName}">
+        <input type="hidden" id="csrfToken" th:value="${_csrf.token}">
+
         <div id="successMessageData" th:text="${successMessage}" style="display:none;"></div>
         <div id="errorMessageData" th:text="${errorMessage}" style="display:none;"></div>
 
@@ -205,19 +225,25 @@
             </th:block>
         </div>
 
-        <button class="btn-1c btn-primary" style="margin-bottom:15px;" onclick="openForm()">➕ Добавить продукт</button>
+        <button class="btn-1c btn-primary" style="margin-bottom:15px;" onclick="openCreateForm()">➕ Добавить продукт</button>
 
-        <div id="productForm"
+        <!-- Верхняя форма только для создания -->
+        <div id="createProductFormWrapper"
              class="form-container"
              th:classappend="${showProductForm} ? ' show' : ''">
             <h3 style="margin-bottom:12px;">Добавление продукта</h3>
 
-            <form th:action="@{/admin/products/save}" th:object="${productDto}" method="post" id="createProductForm">
+            <form id="createProductForm"
+                  method="post"
+                  th:object="${productDto}"
+                  th:action="@{/admin/products/save}"
+                  data-create="/admin/products/save">
+
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
                 <div class="form-group">
-                    <label for="name">Наименование:</label>
-                    <input id="name"
+                    <label for="create-name">Наименование:</label>
+                    <input id="create-name"
                            th:field="*{name}"
                            type="text"
                            class="form-control"
@@ -229,8 +255,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="type">Категория продукта:</label>
-                    <select id="type"
+                    <label for="create-type">Категория продукта:</label>
+                    <select id="create-type"
                             th:field="*{type}"
                             class="form-control"
                             required>
@@ -246,13 +272,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="manufacturer">Наименование производителя:</label>
-                    <select id="manufacturer"
+                    <label for="create-manufacturer">Наименование производителя:</label>
+                    <select id="create-manufacturer"
                             th:field="*{manufacturerId}"
                             class="form-control"
                             required>
                         <option value="">Выберите производителя</option>
-                        <option th:each="m : ${manufacturers}" th:value="${m.id}" th:text="${m.name}">Производитель</option>
+                        <option th:each="m : ${manufacturers}"
+                                th:value="${m.id}"
+                                th:text="|${m.name} (${m.code})|">
+                            Производитель
+                        </option>
                     </select>
                     <div class="error-text"
                          th:if="${#fields.hasErrors('manufacturerId')}"
@@ -261,15 +291,15 @@
 
                 <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <button type="button" class="btn-1c btn-secondary" onclick="addVariant()">Добавить вариант</button>
+                        <button type="button" class="btn-1c btn-secondary" onclick="addVariantToContainer(document.getElementById('createVariantsContainer'))">Добавить вариант</button>
                     </div>
                 </div>
 
-                <div id="variantsContainer"></div>
+                <div id="createVariantsContainer"></div>
 
                 <div style="display:flex; gap:10px; margin-top:10px;">
                     <button type="submit" class="btn-1c btn-success">Сохранить</button>
-                    <button type="button" class="btn-1c btn-danger" onclick="closeForm()">Отменить</button>
+                    <button type="button" class="btn-1c btn-danger" onclick="closeCreateForm()">Отменить</button>
                 </div>
             </form>
         </div>
@@ -293,7 +323,7 @@
                 </tr>
 
                 <th:block th:each="product : ${products}">
-                    <tr>
+                    <tr th:id="${'product_row_' + product.id}">
                         <td th:text="${product.id}"></td>
                         <td th:text="${product.name}"></td>
                         <td th:text="${product.type}"></td>
@@ -303,27 +333,45 @@
                                     th:attr="onclick=|toggleVariants(${product.id})|">
                                 Посмотреть модели
                             </button>
-                            <form th:action="@{/admin/products/delete/{id}(id=${product.id})}" method="post" style="display:inline-block;" onsubmit="return confirm('Удалить продукт?')">
+
+                            <button type="button"
+                                    class="btn-1c btn-primary"
+                                    th:attr="onclick=|openInlineEdit(${product.id})|">
+                                Редактировать
+                            </button>
+
+                            <form th:action="@{/admin/products/delete/{id}(id=${product.id})}"
+                                  method="post"
+                                  style="display:inline-block;"
+                                  th:attr="onsubmit=|return confirmDelete(event, '${#strings.escapeJavaScript(product.name)}')|">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                 <button type="submit" class="btn-1c btn-danger">Удалить</button>
                             </form>
                         </td>
                     </tr>
 
+                    <!-- Инлайн-форма редактирования под строкой продукта -->
+                    <tr th:id="${'inline_edit_row_' + product.id}" style="display:none;">
+                        <td colspan="5" class="edit-row-cell">
+                            <div th:id="${'inline_edit_container_' + product.id}"></div>
+                        </td>
+                    </tr>
+
+                    <!-- Просмотр моделей -->
                     <tr class="variants-row"
                         th:id="${'variants_row_' + product.id}"
                         style="display: none;">
-                        <td colspan="6">
-                            <div id="var-wrap" class="variants-wrap">
+                        <td colspan="5">
+                            <div class="variants-wrap">
                                 <div class="muted" th:if="${#lists.isEmpty(product.productVariants)}">У продукта нет вариантов</div>
 
-                                <div th:each="v, viStat : ${product.productVariants}" class="variant">
-                                    <div id="var-header" class="variant-header">
+                                <div th:each="v : ${product.productVariants}" class="variant">
+                                    <div class="variant-header">
                                         <strong th:text="${v.sku}">...</strong>
                                     </div>
 
                                     <div>
-                                        <div id="var-attr" class="muted">Описание:</div>
+                                        <div class="muted">Описание:</div>
                                         <ul class="attr-list" th:if="${!#lists.isEmpty(v.variantAttributes)}">
                                             <li th:each="a : ${v.variantAttributes}"
                                                 th:text="|${a.name}: ${a.value}|">
@@ -355,9 +403,70 @@
     </div>
 </div>
 
+<!-- Шаблоны -->
 <div id="templates" style="display:none;">
+
+    <!-- Шаблон инлайн-формы редактирования -->
+    <div id="inlineEditFormTemplate">
+        <div class="inline-edit-wrapper">
+            <h3 style="margin-bottom:12px;">Редактирование продукта</h3>
+
+            <form method="post" class="inline-edit-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="id" class="product-id-field"/>
+
+                <div class="form-group">
+                    <label>Наименование:</label>
+                    <input name="name"
+                           type="text"
+                           class="form-control product-name-field"
+                           placeholder="Введите название"
+                           required />
+                </div>
+
+                <div class="form-group">
+                    <label>Категория продукта:</label>
+                    <select name="type" class="form-control product-type-field" required>
+                        <option value="">Выберите категорию продукта</option>
+                        <option th:each="type : ${productTypes}"
+                                th:value="${type.name()}"
+                                th:text="${type.rusName}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Наименование производителя:</label>
+                    <select name="manufacturerId" class="form-control product-manufacturer-field" required>
+                        <option value="">Выберите производителя</option>
+                        <option th:each="m : ${manufacturers}"
+                                th:value="${m.id}"
+                                th:text="|${m.name} (${m.code})|">
+                            Производитель
+                        </option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <button type="button" class="btn-1c btn-secondary" onclick="addVariantFromButton(this)">Добавить вариант</button>
+                    </div>
+                </div>
+
+                <div class="variants-container"></div>
+
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button type="submit" class="btn-1c btn-success">Сохранить</button>
+                    <button type="button" class="btn-1c btn-danger" onclick="closeInlineEditFromButton(this)">Отменить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Шаблон варианта -->
     <div id="variantTemplate">
         <div class="variant" data-index="__INDEX__">
+            <input type="hidden" name="variants[__INDEX__].id" value="">
             <strong style="display:block; margin-bottom:10px;">Вариант <span class="variant-number">№__NUM__</span></strong>
 
             <div class="section-title">Артикул продукта:</div>
@@ -369,7 +478,8 @@
 
             <button type="button"
                     class="btn-1c btn-secondary"
-                    onclick="addAttribute(this)" style="margin-top:5px">
+                    onclick="addAttribute(this)"
+                    style="margin-top:5px">
                 Добавить характеристику
             </button>
 
@@ -379,21 +489,22 @@
 
             <button type="button"
                     class="btn-1c btn-secondary"
-                    onclick="addCost(this)" style="margin-top:5px">
+                    onclick="addCost(this)"
+                    style="margin-top:5px">
                 Добавить цену
             </button>
 
             <div class="var-delete-btn">
-                <div>
-                    <button type="button" class="btn-1c btn-danger" onclick="removeVariant(this)">Удалить вариант</button>
-                </div>
+                <button type="button" class="btn-1c btn-danger" onclick="handleVariantDelete(this)">Удалить вариант</button>
             </div>
         </div>
     </div>
 
+    <!-- Шаблон атрибута -->
     <div id="attributeTemplate">
         <div class="attribute">
             <div style="display:flex; gap:8px; align-items:center;">
+                <input type="hidden" name="variants[__V__].variantAttributes[__A__].id" value="">
                 <input type="text" name="variants[__V__].variantAttributes[__A__].name" class="form-control" placeholder="Название характеристики" style="width:26%;" required/>
                 <input type="text" name="variants[__V__].variantAttributes[__A__].value" class="form-control" placeholder="Описание" style="width:27%;" required/>
                 <button type="button" class="btn-1c btn-danger" onclick="removeElement(this)">Убрать</button>
@@ -401,9 +512,11 @@
         </div>
     </div>
 
+    <!-- Шаблон цены -->
     <div id="costTemplate">
         <div class="cost">
             <div style="display:flex; gap:8px; align-items:center;">
+                <input type="hidden" name="variants[__V__].variantCosts[__C__].id" value="">
                 <input type="number" step="0.01" name="variants[__V__].variantCosts[__C__].basePrice" class="form-control" placeholder="Цена" style="width:20%;" required/>
                 <input type="date" name="variants[__V__].variantCosts[__C__].validFrom" class="form-control" style="width:16%;" required/>
                 <input type="date" name="variants[__V__].variantCosts[__C__].validTo" class="form-control" style="width:16%;" required/>
@@ -415,65 +528,75 @@
 
 <div id="toastContainer" class="toast-container"></div>
 
-<script>
-    let variantIndex = 0;
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <h3>Подтверждение удаления</h3>
+        <p id="confirmMessage" style="margin: 20px 0;">Вы уверены, что хотите удалить продукт?</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="btn-1c btn-danger" onclick="submitDelete()">Удалить</button>
+            <button class="btn-1c btn-secondary" onclick="closeModal()">Отмена</button>
+        </div>
+    </div>
+</div>
 
-    function openForm() {
-        document.getElementById('productForm').classList.add('show');
-    }
+<div id="confirmVariantModal" class="modal">
+    <div class="modal-content">
+        <h3>Подтверждение удаления</h3>
+        <p id="confirmVariantMessage" style="margin: 20px 0;">Вы уверены, что хотите удалить вариант?</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="btn-1c btn-danger" onclick="submitVariantDelete()">Удалить</button>
+            <button class="btn-1c btn-secondary" onclick="closeVariantModal()">Отмена</button>
+        </div>
+    </div>
+</div>
 
-    function closeForm() {
-        document.getElementById('productForm').classList.remove('show');
-        document.getElementById('variantsContainer').innerHTML = '';
-        variantIndex = 0;
-        clearSavedForm();
-        clearHighlightedFields();
-    }
+<script th:inline="javascript">
+    let createVariantIndex = 0;
+    let deleteForm = null;
+    const productsData = /*[[${productsEditData}]]*/ [];
 
-    function addVariant() {
-        const tpl = document.getElementById('variantTemplate').innerHTML;
-        const html = tpl.replace(/__INDEX__/g, variantIndex).replace(/__NUM__/g, variantIndex + 1);
-        const container = document.createElement('div');
-        container.innerHTML = html;
-        const el = container.firstElementChild;
-        el.setAttribute('data-variant-index', variantIndex);
-        el.dataset.attrIndex = 0;
-        el.dataset.costIndex = 0;
-        document.getElementById('variantsContainer').appendChild(el);
-        variantIndex++;
-    }
+    let variantToDeleteId = null;
+    let variantToDeleteBlock = null;
 
-    function removeVariant(btn) {
-        const variant = btn.closest('.variant');
-        variant.remove();
-    }
+    function formatDate(date) {
+        if (!date) return '';
 
-    function addAttribute(btn) {
-        const variant = btn.closest('.variant');
-        const v = variant.getAttribute('data-variant-index');
-        let aIndex = parseInt(variant.dataset.attrIndex || 0, 10);
-        let tpl = document.getElementById('attributeTemplate').innerHTML;
-        tpl = tpl.replace(/__V__/g, v).replace(/__A__/g, aIndex);
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = tpl;
-        variant.querySelector('.attributes').appendChild(wrapper.firstElementChild);
-        variant.dataset.attrIndex = aIndex + 1;
-    }
+        if (typeof date === 'string') {
+            return date.substring(0, 10);
+        }
 
-    function addCost(btn) {
-        const variant = btn.closest('.variant');
-        const v = variant.getAttribute('data-variant-index');
-        let cIndex = parseInt(variant.dataset.costIndex || 0, 10);
-        let tpl = document.getElementById('costTemplate').innerHTML;
-        tpl = tpl.replace(/__V__/g, v).replace(/__C__/g, cIndex);
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = tpl;
-        variant.querySelector('.costs').appendChild(wrapper.firstElementChild);
-        variant.dataset.costIndex = cIndex + 1;
-    }
+        if (typeof date === 'object' && date.year) {
+            let month = date.month;
+            const day = String(date.dayOfMonth ?? date.day ?? '').padStart(2, '0');
 
-    function removeElement(btn) {
-        btn.closest('.attribute, .cost')?.remove();
+            const monthMap = {
+                JANUARY: '01',
+                FEBRUARY: '02',
+                MARCH: '03',
+                APRIL: '04',
+                MAY: '05',
+                JUNE: '06',
+                JULY: '07',
+                AUGUST: '08',
+                SEPTEMBER: '09',
+                OCTOBER: '10',
+                NOVEMBER: '11',
+                DECEMBER: '12'
+            };
+
+            if (typeof month === 'string') {
+                month = monthMap[month.toUpperCase()] || '';
+            } else {
+                month = String(month).padStart(2, '0');
+            }
+
+            if (!month || !day) return '';
+            return `${date.year}-${month}-${day}`;
+        }
+
+        const d = new Date(date);
+        if (isNaN(d)) return '';
+        return d.toISOString().substring(0, 10);
     }
 
     function toggleSidebar() {
@@ -491,6 +614,235 @@
 
         const isHidden = row.style.display === 'none' || row.style.display === '';
         row.style.display = isHidden ? 'table-row' : 'none';
+    }
+
+    function openCreateForm() {
+        closeAllInlineEditRows();
+
+        const form = document.getElementById('createProductForm');
+        form.action = form.dataset.create;
+        form.reset();
+
+        document.getElementById('createVariantsContainer').innerHTML = '';
+        createVariantIndex = 0;
+
+        document.getElementById('createProductFormWrapper').classList.add('show');
+    }
+
+    function closeCreateForm() {
+        document.getElementById('createProductFormWrapper').classList.remove('show');
+        document.getElementById('createVariantsContainer').innerHTML = '';
+        createVariantIndex = 0;
+        clearSavedForm();
+        clearHighlightedFields();
+    }
+
+    function closeAllInlineEditRows() {
+        document.querySelectorAll('[id^="inline_edit_row_"]').forEach(row => {
+            row.style.display = 'none';
+        });
+        document.querySelectorAll('[id^="inline_edit_container_"]').forEach(container => {
+            container.innerHTML = '';
+        });
+    }
+
+    function openInlineEdit(productId) {
+        closeCreateForm();
+        closeAllInlineEditRows();
+
+        const product = productsData.find(p => Number(p.id) === Number(productId));
+        if (!product) return;
+
+        const row = document.getElementById('inline_edit_row_' + productId);
+        const container = document.getElementById('inline_edit_container_' + productId);
+        if (!row || !container) return;
+
+        container.innerHTML = document.getElementById('inlineEditFormTemplate').innerHTML;
+
+        const form = container.querySelector('form.inline-edit-form');
+        const nameInput = form.querySelector('.product-name-field');
+        const typeSelect = form.querySelector('.product-type-field');
+        const manufacturerSelect = form.querySelector('.product-manufacturer-field');
+        const idInput = form.querySelector('.product-id-field');
+        const variantsContainer = form.querySelector('.variants-container');
+
+        form.action = `/admin/products/update/${productId}`;
+
+        idInput.value = product.id ?? '';
+        nameInput.value = product.name ?? '';
+
+        const productTypeValue =
+            typeof product.type === 'object'
+                ? (product.type.name || product.type.rusName || '')
+                : (product.type || '');
+
+        typeSelect.value = productTypeValue;
+
+        if (!typeSelect.value && productTypeValue) {
+            const matchedOption = Array.from(typeSelect.options).find(
+                option => option.text.trim() === String(productTypeValue).trim()
+            );
+            if (matchedOption) {
+                typeSelect.value = matchedOption.value;
+            }
+        }
+
+        manufacturerSelect.value = product.manufacturerId || '';
+
+        variantsContainer.innerHTML = '';
+        variantsContainer.dataset.variantIndex = '0';
+
+        if (product.productVariants) {
+            product.productVariants.forEach(v => addVariantToContainer(variantsContainer, v));
+        }
+
+        row.style.display = 'table-row';
+    }
+
+    function closeInlineEdit(productId) {
+        const row = document.getElementById('inline_edit_row_' + productId);
+        const container = document.getElementById('inline_edit_container_' + productId);
+        if (container) container.innerHTML = '';
+        if (row) row.style.display = 'none';
+    }
+
+    function closeInlineEditFromButton(btn) {
+        const row = btn.closest('tr[id^="inline_edit_row_"]');
+        if (!row) return;
+        const productId = row.id.replace('inline_edit_row_', '');
+        closeInlineEdit(productId);
+    }
+
+    function getVariantIndexForContainer(container) {
+        const current = parseInt(container.dataset.variantIndex || '0', 10);
+        container.dataset.variantIndex = String(current + 1);
+        return current;
+    }
+
+    function addVariantToContainer(container, prefill = null) {
+        const variantIndex = getVariantIndexForContainer(container);
+
+        const tpl = document.getElementById('variantTemplate').innerHTML;
+        const html = tpl.replace(/__INDEX__/g, variantIndex).replace(/__NUM__/g, variantIndex + 1);
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        const el = wrapper.firstElementChild;
+
+        el.setAttribute('data-variant-index', variantIndex);
+        el.dataset.attrIndex = '0';
+        el.dataset.costIndex = '0';
+
+        if (prefill) {
+            const idInput = el.querySelector(`input[name="variants[${variantIndex}].id"]`);
+            const skuInput = el.querySelector(`input[name="variants[${variantIndex}].sku"]`);
+
+            if (idInput) idInput.value = prefill.id ?? '';
+            if (skuInput) skuInput.value = prefill.sku ?? '';
+        }
+
+        container.appendChild(el);
+
+        if (prefill?.variantAttributes) {
+            prefill.variantAttributes.forEach(attr => {
+                const btn = el.querySelector('button[onclick="addAttribute(this)"]');
+                addAttribute(btn, attr);
+            });
+        }
+
+        if (prefill?.variantCosts) {
+            prefill.variantCosts.forEach(cost => {
+                const btn = el.querySelector('button[onclick="addCost(this)"]');
+                addCost(btn, cost);
+            });
+        }
+    }
+
+    function addVariantFromButton(btn) {
+        const form = btn.closest('form');
+        const container = form.querySelector('.variants-container');
+        addVariantToContainer(container);
+    }
+
+    function addAttribute(btn, prefill = null) {
+        const variant = btn.closest('.variant');
+        const v = variant.getAttribute('data-variant-index');
+        const aIndex = parseInt(variant.dataset.attrIndex || '0', 10);
+
+        let tpl = document.getElementById('attributeTemplate').innerHTML;
+        tpl = tpl.replace(/__V__/g, v).replace(/__A__/g, aIndex);
+
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = tpl;
+        const attrEl = wrapper.firstElementChild;
+
+        if (prefill) {
+            const idInput = attrEl.querySelector(`input[name="variants[${v}].variantAttributes[${aIndex}].id"]`);
+            const nameInput = attrEl.querySelector(`input[name="variants[${v}].variantAttributes[${aIndex}].name"]`);
+            const valueInput = attrEl.querySelector(`input[name="variants[${v}].variantAttributes[${aIndex}].value"]`);
+
+            if (idInput) idInput.value = prefill.id ?? '';
+            if (nameInput) nameInput.value = prefill.name ?? '';
+            if (valueInput) valueInput.value = prefill.value ?? '';
+        }
+
+        variant.querySelector('.attributes').appendChild(attrEl);
+        variant.dataset.attrIndex = String(aIndex + 1);
+    }
+
+    function addCost(btn, prefill = null) {
+        const variant = btn.closest('.variant');
+        const v = variant.getAttribute('data-variant-index');
+        const cIndex = parseInt(variant.dataset.costIndex || '0', 10);
+
+        let tpl = document.getElementById('costTemplate').innerHTML;
+        tpl = tpl.replace(/__V__/g, v).replace(/__C__/g, cIndex);
+
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = tpl;
+        const costEl = wrapper.firstElementChild;
+
+        if (prefill) {
+            const idInput = costEl.querySelector(`input[name="variants[${v}].variantCosts[${cIndex}].id"]`);
+            const basePriceInput = costEl.querySelector(`input[name="variants[${v}].variantCosts[${cIndex}].basePrice"]`);
+            const validFromInput = costEl.querySelector(`input[name="variants[${v}].variantCosts[${cIndex}].validFrom"]`);
+            const validToInput = costEl.querySelector(`input[name="variants[${v}].variantCosts[${cIndex}].validTo"]`);
+
+            if (idInput) idInput.value = prefill.id ?? '';
+            if (basePriceInput) basePriceInput.value = prefill.basePrice ?? '';
+            if (validFromInput) validFromInput.value = formatDate(prefill.validFrom);
+            if (validToInput) validToInput.value = formatDate(prefill.validTo);
+        }
+
+        variant.querySelector('.costs').appendChild(costEl);
+        variant.dataset.costIndex = String(cIndex + 1);
+    }
+
+    function removeVariant(btn) {
+        btn.closest('.variant')?.remove();
+    }
+
+    function removeElement(btn) {
+        btn.closest('.attribute, .cost')?.remove();
+    }
+
+    function confirmDelete(event, productName) {
+        event.preventDefault();
+        deleteForm = event.target.closest('form');
+        document.getElementById('confirmMessage').textContent = `Вы уверены, что хотите удалить продукт "${productName}"?`;
+        document.getElementById('confirmModal').style.display = 'block';
+        return false;
+    }
+
+    function submitDelete() {
+        if (deleteForm) {
+            deleteForm.submit();
+        }
+        closeModal();
+    }
+
+    function closeModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+        deleteForm = null;
     }
 
     function showToast(message, type = 'success') {
@@ -536,17 +888,13 @@
     function highlightFieldByName(fieldName) {
         const selector = `[name="${cssEscape(fieldName)}"]`;
         const field = document.querySelector(selector);
-        if (field) {
-            field.classList.add('input-error');
-        }
+        if (field) field.classList.add('input-error');
     }
 
     function highlightFieldsByPattern(pattern) {
         document.querySelectorAll('[name]').forEach(el => {
             const name = el.getAttribute('name') || '';
-            if (pattern.test(name)) {
-                el.classList.add('input-error');
-            }
+            if (pattern.test(name)) el.classList.add('input-error');
         });
     }
 
@@ -554,17 +902,19 @@
         const errorNodes = document.querySelectorAll('.server-field-error');
         errorNodes.forEach(node => {
             const fieldName = node.dataset.field;
-            if (fieldName) {
-                highlightFieldByName(fieldName);
-            }
+            if (fieldName) highlightFieldByName(fieldName);
         });
     }
 
     function applyCustomErrorHighlights(errorMessage) {
         if (!errorMessage) return;
 
-        if (errorMessage.includes('Дата валидности цены некорректна')) {
+        if (errorMessage.includes('Дата валидности цены некорректна') || errorMessage.includes('Некорректный диапазон дат')) {
             highlightFieldsByPattern(/\.variantCosts\[\d+\]\.(validFrom|validTo)$/);
+        }
+
+        if (errorMessage.includes('Цена указана некорректно')) {
+            highlightFieldsByPattern(/\.variantCosts\[\d+\]\.basePrice$/);
         }
 
         if (errorMessage.includes('Такой артикул уже существует')) {
@@ -590,15 +940,13 @@
     document.getElementById('createProductForm').addEventListener('submit', function () {
         const formData = new FormData(this);
         const obj = {};
-
         formData.forEach((value, key) => {
             obj[key] = value;
         });
-
         localStorage.setItem('productFormData', JSON.stringify(obj));
     });
 
-    function restoreVariants(data) {
+    function restoreCreateVariants(data) {
         if (!data || Object.keys(data).length === 0) return;
 
         const variantMap = {};
@@ -618,11 +966,17 @@
         }
 
         Object.keys(variantMap).forEach(vIndex => {
-            addVariant();
+            addVariantToContainer(document.getElementById('createVariantsContainer'));
 
-            const variants = document.querySelectorAll('#variantsContainer .variant');
+            const variants = document.querySelectorAll('#createVariantsContainer .variant');
             const currentVariant = variants[variants.length - 1];
             const variantData = variantMap[vIndex];
+
+            const variantIdInput = currentVariant.querySelector(`[name="variants[${vIndex}].id"]`);
+            if (variantIdInput && variantData['id']) variantIdInput.value = variantData['id'];
+
+            const skuInput = currentVariant.querySelector(`[name="variants[${vIndex}].sku"]`);
+            if (skuInput && variantData['sku']) skuInput.value = variantData['sku'];
 
             const attributeIndexes = new Set();
             const costIndexes = new Set();
@@ -635,24 +989,46 @@
                 if (costMatch) costIndexes.add(costMatch[1]);
             });
 
-            attributeIndexes.forEach(() => {
+            attributeIndexes.forEach(attrIndex => {
                 const btn = currentVariant.querySelector('button[onclick="addAttribute(this)"]');
                 addAttribute(btn);
+
+                const attrBlock = currentVariant.querySelectorAll('.attribute')[currentVariant.querySelectorAll('.attribute').length - 1];
+                if (!attrBlock) return;
+
+                const idInput = attrBlock.querySelector(`[name="variants[${vIndex}].variantAttributes[${attrIndex}].id"]`);
+                const nameInput = attrBlock.querySelector(`[name="variants[${vIndex}].variantAttributes[${attrIndex}].name"]`);
+                const valueInput = attrBlock.querySelector(`[name="variants[${vIndex}].variantAttributes[${attrIndex}].value"]`);
+
+                if (idInput && variantData[`variantAttributes[${attrIndex}].id`]) idInput.value = variantData[`variantAttributes[${attrIndex}].id`];
+                if (nameInput && variantData[`variantAttributes[${attrIndex}].name`]) nameInput.value = variantData[`variantAttributes[${attrIndex}].name`];
+                if (valueInput && variantData[`variantAttributes[${attrIndex}].value`]) valueInput.value = variantData[`variantAttributes[${attrIndex}].value`];
             });
 
-            costIndexes.forEach(() => {
+            costIndexes.forEach(costIndex => {
                 const btn = currentVariant.querySelector('button[onclick="addCost(this)"]');
                 addCost(btn);
-            });
 
-            Object.keys(variantData).forEach(field => {
-                const input = currentVariant.querySelector(`[name="variants[${vIndex}].${field}"]`);
-                if (input) {
-                    input.value = variantData[field];
-                }
+                const costBlock = currentVariant.querySelectorAll('.cost')[currentVariant.querySelectorAll('.cost').length - 1];
+                if (!costBlock) return;
+
+                const idInput = costBlock.querySelector(`[name="variants[${vIndex}].variantCosts[${costIndex}].id"]`);
+                const basePriceInput = costBlock.querySelector(`[name="variants[${vIndex}].variantCosts[${costIndex}].basePrice"]`);
+                const validFromInput = costBlock.querySelector(`[name="variants[${vIndex}].variantCosts[${costIndex}].validFrom"]`);
+                const validToInput = costBlock.querySelector(`[name="variants[${vIndex}].variantCosts[${costIndex}].validTo"]`);
+
+                if (idInput && variantData[`variantCosts[${costIndex}].id`]) idInput.value = variantData[`variantCosts[${costIndex}].id`];
+                if (basePriceInput && variantData[`variantCosts[${costIndex}].basePrice`]) basePriceInput.value = variantData[`variantCosts[${costIndex}].basePrice`];
+                if (validFromInput && variantData[`variantCosts[${costIndex}].validFrom`]) validFromInput.value = formatDate(variantData[`variantCosts[${costIndex}].validFrom`]);
+                if (validToInput && variantData[`variantCosts[${costIndex}].validTo`]) validToInput.value = formatDate(variantData[`variantCosts[${costIndex}].validTo`]);
             });
         });
     }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('confirmModal');
+        if (event.target === modal) closeModal();
+    };
 
     window.addEventListener('DOMContentLoaded', function () {
         const successEl = document.getElementById('successMessageData');
@@ -670,7 +1046,7 @@
             showToast(e, 'error');
         }
 
-        const formVisible = document.getElementById('productForm').classList.contains('show');
+        const formVisible = document.getElementById('createProductFormWrapper').classList.contains('show');
         if (!formVisible) return;
 
         const saved = localStorage.getItem('productFormData');
@@ -678,18 +1054,71 @@
             const data = JSON.parse(saved);
 
             for (let key in data) {
-                const input = document.querySelector(`[name="${cssEscape(key)}"]`);
-                if (input) {
-                    input.value = data[key];
-                }
+                if (key.startsWith('variants[')) continue;
+
+                const input = document.querySelector(`#createProductForm [name="${cssEscape(key)}"]`);
+                if (input) input.value = data[key];
             }
 
-            restoreVariants(data);
+            restoreCreateVariants(data);
         }
 
         applyServerFieldHighlights();
         applyCustomErrorHighlights(e);
     });
+
+    function handleVariantDelete(btn) {
+        const variantBlock = btn.closest('.variant');
+        if (!variantBlock) return;
+
+        const idInput = variantBlock.querySelector('input[name$=".id"]');
+        const variantId = idInput ? idInput.value : '';
+
+        // Если вариант новый и ещё не сохранён в БД — просто убираем без модалки
+        if (!variantId) {
+            variantBlock.remove();
+            return;
+        }
+
+        variantToDeleteId = variantId;
+        variantToDeleteBlock = variantBlock;
+
+        const skuInput = variantBlock.querySelector('input[name$=".sku"]');
+        const sku = skuInput ? skuInput.value : '';
+
+        document.getElementById('confirmVariantMessage').textContent =
+            `Вы уверены, что хотите удалить вариант "${sku}"?`;
+
+        document.getElementById('confirmVariantModal').style.display = 'block';
+    }
+
+    function submitVariantDelete() {
+        if (!variantToDeleteId) return;
+
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = `/admin/variants/delete/${variantToDeleteId}`;
+
+        const csrfNameEl = document.getElementById('csrfName');
+        const csrfTokenEl = document.getElementById('csrfToken');
+
+        if (csrfNameEl && csrfTokenEl) {
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = csrfNameEl.value;
+            csrf.value = csrfTokenEl.value;
+            form.appendChild(csrf);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function closeVariantModal() {
+        document.getElementById('confirmVariantModal').style.display = 'none';
+        variantToDeleteId = null;
+        variantToDeleteBlock = null;
+    }
 </script>
 </body>
 </html>

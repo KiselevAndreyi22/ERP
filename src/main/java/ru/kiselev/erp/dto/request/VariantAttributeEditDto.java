@@ -7,11 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VariantAttributeDto {
-
+public class VariantAttributeEditDto {
     private Long id;
-
     private String name;
-
     private String value;
 }

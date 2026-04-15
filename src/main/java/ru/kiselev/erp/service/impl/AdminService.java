@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.kiselev.erp.dto.request.*;
 import ru.kiselev.erp.dto.response.ProductResponse;
 import ru.kiselev.erp.dto.response.UserDto;
-import ru.kiselev.erp.exception.InvalidCostValueException;
-import ru.kiselev.erp.exception.InvalidDateRangeException;
-import ru.kiselev.erp.exception.ProductAlreadyExistsByNameException;
-import ru.kiselev.erp.exception.VariantSkuAlreadyExistException;
+import ru.kiselev.erp.exception.*;
 import ru.kiselev.erp.model.Role;
 import ru.kiselev.erp.model.User;
 import ru.kiselev.erp.model.admin.*;
@@ -49,6 +46,11 @@ public class AdminService {
     public void register(String username, String password) {
 
         User user = new User();
+
+        if(userRepository.findByUsername(username).isPresent()){
+            throw new UsernameAlreadyExistException();
+        }
+
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(Role.USER);
@@ -137,7 +139,7 @@ public class AdminService {
                             throw new InvalidDateRangeException();
                         }
 
-                        if(dto.getValidTo().isBefore(LocalDate.now())) {
+                        if(dto.getValidTo().isBefore(dto.getValidFrom())) {
                             throw new InvalidDateRangeException();
                         }
 
@@ -214,6 +216,172 @@ public class AdminService {
     public ProductType[] getAllProductTypes(){
         return ProductType.values();
     }
+
+    @Transactional
+    public void updateProduct(Long productId, UpdateProductRequest request) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (request.getName() != null && !request.getName().equals(product.getName())) {
+            if (productRepository.existsByNameAndIdNot(request.getName(), product.getId())) {
+                throw new ProductAlreadyExistsByNameException();
+            }
+            product.setName(request.getName());
+        }
+
+        if (request.getType() != null) {
+            product.setType(request.getType());
+        }
+
+        if (request.getManufacturerId() != null) {
+            Manufacturer manufacturer = manufacturerRepository.findById(request.getManufacturerId())
+                    .orElseThrow(() -> new RuntimeException("Manufacturer not found"));
+            product.setManufacturer(manufacturer);
+        }
+
+        if (request.getVariants() != null) {
+            for (ProductVariantDto variantDto : request.getVariants()) {
+
+                ProductVariant variant;
+
+                if (variantDto.getId() != null) {
+                    variant = product.getProductVariants().stream()
+                            .filter(v -> v.getId().equals(variantDto.getId()))
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("Variant not found"));
+
+                    if (variantDto.getSku() != null && !variantDto.getSku().equals(variant.getSku())) {
+                        if (productVariantRepository.existsBySkuAndIdNot(variantDto.getSku(), variant.getId())) {
+                            throw new VariantSkuAlreadyExistException();
+                        }
+                        variant.setSku(variantDto.getSku());
+                    }
+
+                } else {
+                    if (productVariantRepository.existsBySku(variantDto.getSku())) {
+                        throw new VariantSkuAlreadyExistException();
+                    }
+
+                    variant = new ProductVariant();
+                    variant.setSku(variantDto.getSku());
+                    variant.setProduct(product);
+
+                    product.getProductVariants().add(variant);
+                }
+
+                // --- ATTRIBUTES ---
+                if (variantDto.getVariantAttributes() != null) {
+                    for (VariantAttributeDto attrDto : variantDto.getVariantAttributes()) {
+
+                        VariantAttribute attribute;
+
+                        if (attrDto.getId() != null) {
+                            attribute = variant.getVariantAttributes().stream()
+                                    .filter(a -> a.getId().equals(attrDto.getId()))
+                                    .findFirst()
+                                    .orElseThrow(() -> new RuntimeException("Attribute not found"));
+
+                            if (attrDto.getName() != null) {
+                                attribute.setName(attrDto.getName());
+                            }
+                            if (attrDto.getValue() != null) {
+                                attribute.setValue(attrDto.getValue());
+                            }
+
+                        } else {
+                            attribute = new VariantAttribute();
+                            attribute.setName(attrDto.getName());
+                            attribute.setValue(attrDto.getValue());
+                            attribute.setProductVariant(variant);
+
+                            variant.getVariantAttributes().add(attribute);
+                        }
+                    }
+                }
+
+                // --- COSTS ---
+                if (variantDto.getVariantCosts() != null) {
+                    for (VariantCostDto costDto : variantDto.getVariantCosts()) {
+
+                        VariantCost cost;
+
+                        if (costDto.getId() != null) {
+                            cost = variant.getVariantCosts().stream()
+                                    .filter(c -> c.getId().equals(costDto.getId()))
+                                    .findFirst()
+                                    .orElseThrow(() -> new RuntimeException("Cost not found"));
+
+                        } else {
+                            cost = new VariantCost();
+                            cost.setProductVariant(variant);
+                            variant.getVariantCosts().add(cost);
+                        }
+
+                        if (costDto.getBasePrice() <= 0) {
+                            throw new InvalidCostValueException();
+                        }
+
+                        if (costDto.getValidFrom().isBefore(LocalDate.now())) {
+                            throw new InvalidDateRangeException();
+                        }
+
+                        if (costDto.getValidTo().isBefore(costDto.getValidFrom())) {
+                            throw new InvalidDateRangeException();
+                        }
+
+                        cost.setBasePrice(costDto.getBasePrice());
+                        cost.setValidFrom(costDto.getValidFrom());
+                        cost.setValidTo(costDto.getValidTo());
+                    }
+                }
+            }
+        }
+
+        productRepository.save(product);
+    }
+
+    public void deleteProductVariant(Long variantId) {
+
+        if(!productVariantRepository.existsById(variantId)) {
+            throw new RuntimeException();
+        }
+
+        productVariantRepository.deleteById(variantId);
+    }
+
+    public List<ProductEditDto> getProductsForEdit() {
+        return productRepository.findAll().stream()
+                .map(product -> new ProductEditDto(
+                        product.getId(),
+                        product.getName(),
+                        product.getType(),
+                        product.getManufacturer() != null ? product.getManufacturer().getId() : null,
+                        product.getProductVariants().stream()
+                                .map(variant -> new ProductVariantEditDto(
+                                        variant.getId(),
+                                        variant.getSku(),
+                                        variant.getVariantAttributes().stream()
+                                                .map(attr -> new VariantAttributeEditDto(
+                                                        attr.getId(),
+                                                        attr.getName(),
+                                                        attr.getValue()
+                                                ))
+                                                .toList(),
+                                        variant.getVariantCosts().stream()
+                                                .map(cost -> new VariantCostEditDto(
+                                                        cost.getId(),
+                                                        cost.getBasePrice(),
+                                                        cost.getValidFrom(),
+                                                        cost.getValidTo()
+                                                ))
+                                                .toList()
+                                ))
+                                .toList()
+                ))
+                .toList();
+    }
     //Цену надо искать только текущую, которая активна на данный момент
+
 
 }

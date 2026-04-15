@@ -9,10 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.kiselev.erp.dto.request.CreateProductRequest;
 import ru.kiselev.erp.dto.request.ManufacturerDto;
-import ru.kiselev.erp.exception.InvalidCostValueException;
-import ru.kiselev.erp.exception.InvalidDateRangeException;
-import ru.kiselev.erp.exception.ProductAlreadyExistsByNameException;
-import ru.kiselev.erp.exception.VariantSkuAlreadyExistException;
+import ru.kiselev.erp.dto.request.UpdateProductRequest;
+import ru.kiselev.erp.exception.*;
 import ru.kiselev.erp.repository.admin.ManufacturerRepository;
 import ru.kiselev.erp.repository.admin.ProductRepository;
 import ru.kiselev.erp.service.impl.AdminService;
@@ -39,15 +37,23 @@ public class AdminController {
 
     @PostMapping("/register")
     public String register(@RequestParam String username,
-                           @RequestParam String password) {
-
-        adminService.register(username, password);
+                           @RequestParam String password,
+                           RedirectAttributes redirectAttributes) {
+        try {
+            adminService.register(username, password);
+            redirectAttributes.addFlashAttribute("successMessage", "Пользователь успешно создан");
+        } catch (UsernameAlreadyExistException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Пользователь с таким именем уже существует");
+            redirectAttributes.addFlashAttribute("showForm", true);
+        }
         return "redirect:/admin/users";
     }
 
     @PostMapping("/delete-user")
-    public String deleteUser(@RequestParam Long id) {
+    public String deleteUser(@RequestParam Long id,
+                            RedirectAttributes redirectAttributes) {
         adminService.deleteUserById(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Пользователь успешно удалён");
         return "redirect:/admin/users";
     }
 
@@ -111,6 +117,7 @@ public class AdminController {
         model.addAttribute("products", adminService.getAllProducts());
         model.addAttribute("manufacturers", adminService.getAllManufacturers());
         model.addAttribute("productTypes", adminService.getAllProductTypes());
+        model.addAttribute("productsEditData", adminService.getProductsForEdit());
 
         if (!model.containsAttribute("productDto")) {
             model.addAttribute("productDto", new CreateProductRequest());
@@ -211,6 +218,46 @@ public class AdminController {
         }
         catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении продукта");
+        }
+
+        return "redirect:/admin/products";
+    }
+
+    @PostMapping("/variants/delete/{id}")
+    public String deleteVariant(@PathVariable Long id,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            adminService.deleteProductVariant(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Вариант успешно удален");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении варианта");
+        }
+        return "redirect:/admin/products";
+    }
+
+    @PostMapping("/products/update/{id}")
+    public String updateProduct(@PathVariable Long id,
+                                @ModelAttribute UpdateProductRequest request,
+                                RedirectAttributes redirectAttributes) {
+
+        try {
+            adminService.updateProduct(id, request);
+            redirectAttributes.addFlashAttribute("successMessage", "Продукт успешно обновлён");
+
+        } catch (ProductAlreadyExistsByNameException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Продукт с таким названием уже существует");
+
+        } catch (VariantSkuAlreadyExistException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Такой артикул уже существует");
+
+        } catch (InvalidCostValueException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Цена указана некорректно");
+
+        } catch (InvalidDateRangeException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Некорректный диапазон дат");
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка обновления продукта");
         }
 
         return "redirect:/admin/products";
