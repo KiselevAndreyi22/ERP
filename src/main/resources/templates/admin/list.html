@@ -524,7 +524,7 @@
                         <form th:action="@{/admin/manufacturers/delete/{id}(id=${manufacturer.getId()})}"
                               method="post"
                               style="display: inline-block;"
-                              onsubmit="return confirmDelete(event, '${manufacturer.getName()}')">
+                              th:attr="onsubmit=|return confirmDelete(event, '${manufacturer.name}')|">
                             <button type="submit" class="btn-1c btn-danger" style="padding: 5px 12px;">Удалить</button>
                         </form>
                     </td>

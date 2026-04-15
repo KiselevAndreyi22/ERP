@@ -1,5 +1,6 @@
 package ru.kiselev.erp.model.admin;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,7 @@ public class ProductVariant {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "product_id")
+    @JsonIgnore
     private Product product;
 
     @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
