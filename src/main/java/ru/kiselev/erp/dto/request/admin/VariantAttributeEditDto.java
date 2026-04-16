@@ -1,4 +1,4 @@
-package ru.kiselev.erp.dto.request;
+package ru.kiselev.erp.dto.request.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

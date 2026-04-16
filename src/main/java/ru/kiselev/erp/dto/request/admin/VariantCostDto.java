@@ -1,4 +1,4 @@
-package ru.kiselev.erp.dto.request;
+package ru.kiselev.erp.dto.request.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +9,13 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VariantCostEditDto {
+public class VariantCostDto {
+
     private Long id;
+
     private double basePrice;
+
     private LocalDate validFrom;
+
     private LocalDate validTo;
 }

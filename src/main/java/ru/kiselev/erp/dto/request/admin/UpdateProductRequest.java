@@ -1,6 +1,5 @@
-package ru.kiselev.erp.dto.request;
+package ru.kiselev.erp.dto.request.admin;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,9 +10,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateProductRequest {
+public class UpdateProductRequest {
 
-    @NotBlank(message = "Это поле требует обязательного ввода!")
     private String name;
 
     private ProductType type;
@@ -21,5 +19,4 @@ public class CreateProductRequest {
     private Long manufacturerId;
 
     private List<ProductVariantDto> variants;
-
 }

@@ -7,9 +7,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.kiselev.erp.dto.request.CreateProductRequest;
-import ru.kiselev.erp.dto.request.ManufacturerDto;
-import ru.kiselev.erp.dto.request.UpdateProductRequest;
+import ru.kiselev.erp.dto.request.admin.CreateProductRequest;
+import ru.kiselev.erp.dto.request.admin.ManufacturerDto;
+import ru.kiselev.erp.dto.request.admin.RegisterUserRequest;
+import ru.kiselev.erp.dto.request.admin.UpdateProductRequest;
 import ru.kiselev.erp.exception.*;
 import ru.kiselev.erp.repository.admin.ManufacturerRepository;
 import ru.kiselev.erp.repository.admin.ProductRepository;
@@ -36,11 +37,10 @@ public class AdminController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestParam String username,
-                           @RequestParam String password,
+    public String register(@ModelAttribute("registerUserDto") RegisterUserRequest registerUserRequest,
                            RedirectAttributes redirectAttributes) {
         try {
-            adminService.register(username, password);
+            adminService.register(registerUserRequest);
             redirectAttributes.addFlashAttribute("successMessage", "Пользователь успешно создан");
         } catch (UsernameAlreadyExistException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Пользователь с таким именем уже существует");

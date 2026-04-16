@@ -3,7 +3,7 @@ package ru.kiselev.erp.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.kiselev.erp.dto.request.ProductVariantDto;
+import ru.kiselev.erp.dto.request.admin.ProductVariantDto;
 import ru.kiselev.erp.model.admin.Manufacturer;
 import ru.kiselev.erp.model.admin.ProductType;
 

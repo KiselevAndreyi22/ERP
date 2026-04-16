@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.kiselev.erp.dto.request.*;
+import ru.kiselev.erp.dto.request.admin.*;
 import ru.kiselev.erp.dto.response.ProductResponse;
 import ru.kiselev.erp.dto.response.UserDto;
 import ru.kiselev.erp.exception.*;
@@ -20,7 +20,6 @@ import ru.kiselev.erp.repository.admin.VariantAttributeRepository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -43,17 +42,17 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    public void register(String username, String password) {
+    public void register(RegisterUserRequest registerUserRequest) {
 
         User user = new User();
 
-        if(userRepository.findByUsername(username).isPresent()){
+        if(userRepository.findByUsername(registerUserRequest.getUsername()).isPresent()){
             throw new UsernameAlreadyExistException();
         }
 
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole(Role.USER);
+        user.setUsername(registerUserRequest.getUsername());
+        user.setPassword(passwordEncoder.encode(registerUserRequest.getPassword()));
+        user.setRole(registerUserRequest.getRole());
 
         userRepository.save(user);
     }

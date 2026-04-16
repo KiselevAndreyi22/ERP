@@ -1,4 +1,4 @@
-package ru.kiselev.erp.dto.request;
+package ru.kiselev.erp.dto.request.admin;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

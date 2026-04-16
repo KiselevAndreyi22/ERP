@@ -6,101 +6,494 @@
     <title>ERP Система - Пользователи</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; overflow-x: hidden; }
 
-        /* Боковое меню */
-        .sidebar { position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; transition: all 0.3s ease; }
-        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        .sidebar-header h2 { font-size: 20px; font-weight: 600; margin: 0; color: white; }
-        .sidebar-header p { font-size: 12px; opacity: 0.8; margin-top: 5px; }
-        .user-info { padding: 15px 20px; background: rgba(0,0,0,0.2); margin: 0 15px 20px 15px; border-radius: 10px; }
-        .user-name { font-size: 14px; font-weight: 600; display: block; margin-bottom: 5px; }
-        .user-role { font-size: 11px; opacity: 0.7; }
-        .nav-menu { list-style: none; padding: 0; margin: 0; }
-        .nav-item { margin: 5px 15px; border-radius: 10px; transition: all 0.3s ease; }
-        .nav-item:hover { background: rgba(255,255,255,0.1); }
-        .nav-item.active { background: rgba(255,255,255,0.2); }
-        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: white; text-decoration: none; font-size: 14px; transition: all 0.3s ease; }
-        .nav-icon { width: 24px; margin-right: 12px; font-size: 18px; }
-        .nav-text { flex: 1; }
-        .nav-badge { background: #ff4444; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            overflow-x: hidden;
+        }
 
-        .submenu { list-style: none; padding-left: 51px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .nav-item.has-submenu.active .submenu { max-height: 300px; }
-        .submenu-item { margin: 5px 0; }
-        .submenu-link { display: block; padding: 8px 15px; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; transition: all 0.3s ease; }
-        .submenu-link:hover { color: white; padding-left: 20px; }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
 
-        .logout-btn { position: absolute; bottom: 20px; left: 15px; right: 15px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; }
-        .logout-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); }
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
 
-        /* Основной контент */
-        .main-content { margin-left: 280px; padding: 20px; min-height: 100vh; transition: all 0.3s ease; }
-        .top-bar { background: white; border-radius: 12px; padding: 15px 25px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .page-title { font-size: 24px; font-weight: 600; color: #333; }
-        .menu-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: #666; }
-        .content-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .sidebar-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            color: white;
+        }
 
-        /* Кнопки в стиле 1С */
-        .btn-1c { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: #2a5298; color: white; }
-        .btn-primary:hover { background: #1e3c72; transform: translateY(-1px); }
-        .btn-success { background: #28a745; color: white; }
-        .btn-success:hover { background: #218838; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-danger:hover { background: #c82333; }
-        .btn-secondary { background: #6c757d; color: white; }
-        .btn-secondary:hover { background: #5a6268; }
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
 
-        /* Форма (как в list.html) */
-        .form-container { display: none; background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #e9ecef; }
-        .form-container.show { display: block; animation: fadeIn 0.3s ease; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #495057; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; transition: all 0.2s; }
-        .form-control:focus { outline: none; border-color: #2a5298; box-shadow: 0 0 0 3px rgba(42,82,152,0.1); }
-        .form-control.input-error { border-color: #dc3545; }
-        .error { color: #dc3545; font-size: 12px; margin-top: 5px; }
+        .user-info {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.2);
+            margin: 0 15px 20px 15px;
+            border-radius: 10px;
+        }
 
-        /* Таблица */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef; }
-        th { background: #f8f9fa; font-weight: 600; color: #495057; }
-        tr:hover { background: #f8f9fa; }
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
 
-        /* Тосты */
-        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 350px; }
-        .toast { background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; min-width: 280px; animation: slideInRight 0.3s ease-out; }
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .toast-success { border-left: 4px solid #28a745; }
-        .toast-success .toast-header { background: #d4edda; color: #155724; }
-        .toast-error { border-left: 4px solid #dc3545; }
-        .toast-error .toast-header { background: #f8d7da; color: #721c24; }
-        .toast-header { padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
-        .toast-body { padding: 12px 15px; color: #333; }
-        .toast-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
+        .user-role {
+            font-size: 11px;
+            opacity: 0.7;
+        }
 
-        /* Модалка */
-        .modal { display: none; position: fixed; z-index: 1100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 15% auto; padding: 25px; border-radius: 12px; width: 400px; text-align: center; }
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-item {
+            margin: 5px 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
 
-        /* Адаптивность */
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-icon {
+            width: 24px;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .nav-text {
+            flex: 1;
+        }
+
+        .nav-badge {
+            background: #ff4444;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .submenu {
+            list-style: none;
+            padding-left: 51px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .nav-item.has-submenu.active .submenu {
+            max-height: 300px;
+        }
+
+        .submenu-item {
+            margin: 5px 0;
+        }
+
+        .submenu-link {
+            display: block;
+            padding: 8px 15px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .submenu-link:hover {
+            color: white;
+            padding-left: 20px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .top-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .content-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-1c {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #2a5298;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3c72;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .form-container {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-container.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42,82,152,0.1);
+        }
+
+        .form-control.input-error {
+            border-color: #dc3545;
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 6px;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .role-admin {
+            background: #fde2e1;
+            color: #b42318;
+        }
+
+        .role-user {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            min-width: 280px;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-success {
+            border-left: 4px solid #28a745;
+        }
+
+        .toast-success .toast-header {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .toast-error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .toast-error .toast-header {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .toast-header {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .toast-body {
+            padding: 12px 15px;
+            color: #333;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 25px;
+            border-radius: 12px;
+            width: 400px;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .menu-toggle { display: block; }
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .content-container {
+                padding: 18px;
+            }
+
+            .modal-content {
+                width: calc(100% - 30px);
+                margin: 30% auto;
+            }
         }
     </style>
 </head>
 <body>
-<!-- Боковое меню -->
+
 <div th:replace="~{menu/sidebar.html :: sidebar}"></div>
 
-<!-- Основной контент -->
 <div class="main-content">
     <div class="top-bar">
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
@@ -109,25 +502,20 @@
     </div>
 
     <div class="content-container">
-        <!-- Скрытые элементы для сообщений -->
         <div id="successMessageData" th:text="${successMessage}" style="display: none;"></div>
         <div id="errorMessageData" th:text="${errorMessage}" style="display: none;"></div>
 
-        <!-- Кнопка показать форму регистрации -->
         <button class="btn-1c btn-primary" onclick="openUserForm()" style="margin-bottom: 15px;">
-            <span>➕</span> Зарегистрировать пользователя
+            <span>➕</span> Добавить пользователя
         </button>
 
-        <!-- Форма регистрации (как у manufacturers в list.html) -->
-        <!-- Форма регистрации -->
         <div id="userForm"
              class="form-container"
              th:class="${showForm} ? 'form-container show' : 'form-container'">
 
-            <h3 style="margin-bottom: 20px;">Регистрация пользователя</h3>
+            <h3 style="margin-bottom: 20px;">Добавление пользователя</h3>
 
             <form th:action="@{/admin/register}" method="post">
-
                 <div class="form-group">
                     <label for="username">Имя пользователя</label>
                     <input id="username"
@@ -137,6 +525,15 @@
                            th:class="${errorMessage != null} ? 'form-control input-error' : 'form-control'"
                            placeholder="Введите логин"
                            required />
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Роль</label>
+                    <select id="role" name="role" class="form-control" required>
+                        <option value="" disabled selected>Выберите роль</option>
+                        <option value="USER">Пользователь</option>
+                        <option value="ADMIN">Администратор</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -158,25 +555,31 @@
             </form>
         </div>
 
-        <!-- Список пользователей -->
         <h3 style="margin: 10px 0 15px 0;">Список пользователей</h3>
+
         <div class="table-container">
             <table>
                 <thead>
                 <tr>
-                    <th style="width: 45%">Имя пользователя</th>
+                    <th style="width: 40%">Имя пользователя</th>
                     <th style="width: 30%">Роль</th>
-                    <th style="width: 25%">Действия</th>
+                    <th style="width: 30%">Действия</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="user : ${users}">
                     <td th:text="${user.username}"></td>
-                    <td th:text="${user.role}"></td>
+                    <td>
+                        <span th:if="${user.role.name() == 'ADMIN'}"
+                              class="role-badge role-admin">Администратор</span>
+                        <span th:if="${user.role.name() == 'USER'}"
+                              class="role-badge role-user">Пользователь</span>
+                    </td>
                     <td>
                         <form th:action="@{/admin/delete-user}"
                               method="post"
                               style="display: inline-block;"
+                              th:attr="data-username=${user.username}"
                               onsubmit="return confirmDelete(event)">
 
                             <input type="hidden" name="id" th:value="${user.id}" />
@@ -184,13 +587,13 @@
 
                             <button type="submit"
                                     class="btn-1c btn-danger"
-                                    style="padding: 5px 12px;"
-                                    th:attr="data-username=${user.username}">
+                                    style="padding: 5px 12px;">
                                 Удалить
                             </button>
                         </form>
                     </td>
                 </tr>
+
                 <tr th:if="${users.isEmpty()}">
                     <td colspan="3" style="text-align: center;">Нет пользователей</td>
                 </tr>
@@ -200,10 +603,8 @@
     </div>
 </div>
 
-<!-- Контейнер для уведомлений -->
 <div id="toastContainer" class="toast-container"></div>
 
-<!-- Модальное окно подтверждения -->
 <div id="confirmModal" class="modal">
     <div class="modal-content">
         <h3>Подтверждение удаления</h3>
@@ -218,16 +619,18 @@
 <script>
     let deleteForm = null;
 
-    // Тосты
     function showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
         if (!container) return;
+
         const toastId = 'toast_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.id = toastId;
+
         const icon = type === 'success' ? '✓' : '✗';
         const title = type === 'success' ? 'Успешно' : 'Ошибка';
+
         toast.innerHTML = `
             <div class="toast-header">
                 <span>${icon} ${title}</span>
@@ -235,46 +638,97 @@
             </div>
             <div class="toast-body">${escapeHtml(message)}</div>
         `;
+
         container.appendChild(toast);
+
+        setTimeout(() => {
+            closeToast(toastId);
+        }, 4000);
     }
-    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
-    function closeToast(toastId) { const toast = document.getElementById(toastId); if (toast) { toast.style.animation = 'slideInRight 0.3s ease-out reverse'; setTimeout(() => toast.remove(), 300); } }
 
-    // Меню
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-    function toggleSubmenu(element) { const parent = element.closest('.nav-item'); parent.classList.toggle('active'); }
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 
-    // Форма регистрации
-    function openUserForm() { document.getElementById('userForm').classList.add('show'); }
+    function closeToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('open');
+        }
+    }
+
+    function toggleSubmenu(element) {
+        const parent = element.closest('.nav-item');
+        if (parent) {
+            parent.classList.toggle('active');
+        }
+    }
+
+    function openUserForm() {
+        document.getElementById('userForm').classList.add('show');
+    }
+
     function closeUserForm() {
         const formWrap = document.getElementById('userForm');
         formWrap.classList.remove('show');
-        const inputs = formWrap.querySelectorAll('input[type="text"], input[type="password"]');
-        inputs.forEach(i => i.value = '');
+
+        const form = formWrap.querySelector('form');
+        if (form) {
+            form.reset();
+        }
     }
 
-    // Модалка удаления
-    function confirmDelete(event, username) {
+    function confirmDelete(event) {
         event.preventDefault();
         deleteForm = event.target.closest('form');
-        document.getElementById('confirmMessage').textContent = `Вы уверены, что хотите удалить пользователя "${username}"?`;
+
+        const username = deleteForm.getAttribute('data-username') || '';
+        document.getElementById('confirmMessage').textContent =
+            `Вы уверены, что хотите удалить пользователя "${username}"?`;
+
         document.getElementById('confirmModal').style.display = 'block';
         return false;
     }
+
     function submitDelete() {
         if (deleteForm) {
             deleteForm.submit();
         }
     }
-    function closeModal() { document.getElementById('confirmModal').style.display = 'none'; deleteForm = null; }
-    window.onclick = function(event) { const modal = document.getElementById('confirmModal'); if (event.target === modal) closeModal(); }
 
-    // Показ сообщений при загрузке
+    function closeModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+        deleteForm = null;
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('confirmModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    };
+
     window.addEventListener('DOMContentLoaded', function() {
         const successMsg = document.getElementById('successMessageData')?.textContent.trim();
         const errorMsg = document.getElementById('errorMessageData')?.textContent.trim();
-        if (successMsg && successMsg !== '') showToast(successMsg, 'success');
-        if (errorMsg && errorMsg !== '') showToast(errorMsg, 'error');
+
+        if (successMsg) {
+            showToast(successMsg, 'success');
+        }
+
+        if (errorMsg) {
+            showToast(errorMsg, 'error');
+        }
     });
 </script>
 </body>

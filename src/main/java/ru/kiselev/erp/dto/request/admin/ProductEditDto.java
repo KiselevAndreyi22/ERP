@@ -1,4 +1,4 @@
-package ru.kiselev.erp.dto.request;
+package ru.kiselev.erp.dto.request.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,13 +10,10 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateProductRequest {
-
+public class ProductEditDto {
+    private Long id;
     private String name;
-
     private ProductType type;
-
     private Long manufacturerId;
-
-    private List<ProductVariantDto> variants;
+    private List<ProductVariantEditDto> productVariants;
 }

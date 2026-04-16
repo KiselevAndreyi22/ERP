@@ -1,6 +1,5 @@
-package ru.kiselev.erp.dto.request;
+package ru.kiselev.erp.dto.request.admin;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +13,6 @@ public class ProductVariantDto {
 
     private Long id;
 
-    @NotBlank(message = "Это поле требует обязательного ввода!")
     private String sku;
 
     private List<VariantAttributeDto> variantAttributes;
