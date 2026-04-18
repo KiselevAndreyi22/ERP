@@ -17,6 +17,7 @@ import ru.kiselev.erp.repository.admin.ManufacturerRepository;
 import ru.kiselev.erp.repository.admin.ProductRepository;
 import ru.kiselev.erp.repository.admin.ProductVariantRepository;
 import ru.kiselev.erp.repository.admin.VariantAttributeRepository;
+import ru.kiselev.erp.service.AdminServiceImpl;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +28,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
-public class AdminService {
+public class AdminService implements AdminServiceImpl {
 
     UserRepository userRepository;
     ManufacturerRepository manufacturerRepository;
@@ -42,6 +43,7 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public void register(RegisterUserRequest registerUserRequest) {
 
         User user = new User();
@@ -57,16 +59,19 @@ public class AdminService {
         userRepository.save(user);
     }
 
+    @Override
     public void deleteUserById(Long id){
         userRepository.deleteById(id);
     }
 
+    @Override
     public List<ManufacturerDto> getAllManufacturers(){
         return manufacturerRepository.findAll()
                 .stream().map(ManufacturerDto::new)
                 .collect(Collectors.toList());
     }
 
+    @Override
     public ManufacturerDto addManufacturer(ManufacturerDto manufacturerDto){
 
         Manufacturer manufacturer = new Manufacturer();
@@ -77,10 +82,12 @@ public class AdminService {
         return manufacturerDto;
     }
 
+    @Override
     public void deleteManufacturerById(Long id){
         manufacturerRepository.deleteById(id);
     }
 
+    @Override
     @Transactional
     public Product createProduct(CreateProductRequest request){
 
@@ -153,11 +160,13 @@ public class AdminService {
         return productRepository.save(product);
     }
 
+    @Override
     public void deleteProductById(Long id){
         productRepository.deleteById(id);
     }
 
-    private ProductVariantDto mapToProductVariantDto(ProductVariant productVariant){
+    @Override
+    public ProductVariantDto mapToProductVariantDto(ProductVariant productVariant){
         ProductVariantDto productVariantDto = new ProductVariantDto();
 
         productVariantDto.setSku(productVariant.getSku());
@@ -188,7 +197,8 @@ public class AdminService {
         return productVariantDto;
     }
 
-    private ProductResponse mapToProductResponse(Product product){
+    @Override
+    public ProductResponse mapToProductResponse(Product product){
         ProductResponse productResponse = new ProductResponse();
 
         productResponse.setId(product.getId());
@@ -205,6 +215,7 @@ public class AdminService {
         return productResponse;
     }
 
+    @Override
     public List<ProductResponse> getAllProducts(){
         return productRepository.findAll()
                 .stream()
@@ -216,6 +227,7 @@ public class AdminService {
         return ProductType.values();
     }
 
+    @Override
     @Transactional
     public void updateProduct(Long productId, UpdateProductRequest request) {
 
@@ -269,7 +281,6 @@ public class AdminService {
                     product.getProductVariants().add(variant);
                 }
 
-                // --- ATTRIBUTES ---
                 if (variantDto.getVariantAttributes() != null) {
                     for (VariantAttributeDto attrDto : variantDto.getVariantAttributes()) {
 
@@ -299,7 +310,6 @@ public class AdminService {
                     }
                 }
 
-                // --- COSTS ---
                 if (variantDto.getVariantCosts() != null) {
                     for (VariantCostDto costDto : variantDto.getVariantCosts()) {
 
@@ -340,6 +350,7 @@ public class AdminService {
         productRepository.save(product);
     }
 
+    @Override
     public void deleteProductVariant(Long variantId) {
 
         if(!productVariantRepository.existsById(variantId)) {
@@ -349,6 +360,7 @@ public class AdminService {
         productVariantRepository.deleteById(variantId);
     }
 
+    @Override
     public List<ProductEditDto> getProductsForEdit() {
         return productRepository.findAll().stream()
                 .map(product -> new ProductEditDto(

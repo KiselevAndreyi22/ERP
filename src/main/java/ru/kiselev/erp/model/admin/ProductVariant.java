@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import ru.kiselev.erp.model.financier.PriceList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,4 +33,6 @@ public class ProductVariant {
     @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VariantCost> variantCosts = new ArrayList<>();
 
+    @OneToOne(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PriceList priceList;
 }

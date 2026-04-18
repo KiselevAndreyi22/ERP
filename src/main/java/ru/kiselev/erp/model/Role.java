@@ -4,6 +4,8 @@ import ru.kiselev.erp.model.admin.ProductType;
 
 public enum Role {
     USER("Пользователь"),
+    FINANC("Финансист"),
+    MANAGER("Менеджер"),
     ADMIN("Администратор");
 
     private final String rusName;

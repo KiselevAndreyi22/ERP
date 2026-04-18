@@ -531,6 +531,8 @@
                     <label for="role">Роль</label>
                     <select id="role" name="role" class="form-control" required>
                         <option value="" disabled selected>Выберите роль</option>
+                        <option value="MANAGER">Менеджер</option>
+                        <option value="FINANC">Финансист</option>
                         <option value="USER">Пользователь</option>
                         <option value="ADMIN">Администратор</option>
                     </select>
@@ -574,6 +576,10 @@
                               class="role-badge role-admin">Администратор</span>
                         <span th:if="${user.role.name() == 'USER'}"
                               class="role-badge role-user">Пользователь</span>
+                        <span th:if="${user.role.name() == 'MANAGER'}"
+                              class="role-badge role-user">Менеджер</span>
+                        <span th:if="${user.role.name() == 'FINANC'}"
+                              class="role-badge role-user">Финансист</span>
                     </td>
                     <td>
                         <form th:action="@{/admin/delete-user}"

@@ -250,4 +250,19 @@ public class AdminController {
 
         return "redirect:/admin/products";
     }
+
+    @PostMapping("products/variants/delete/{id}")
+    public String deleteProductVariant(@PathVariable Long id,
+                                         RedirectAttributes redirectAttributes) {
+
+        try {
+            adminService.deleteProductVariant(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Вариант успешно удален");
+        }
+        catch (Exception e) {
+            redirectAttributes.addFlashAttribute("successMessage", "Ошибка удаления продукта");
+        }
+
+        return "redirect:/admin/products";
+    }
 }
